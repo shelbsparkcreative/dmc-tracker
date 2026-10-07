@@ -1,1058 +1,318 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMC Embroidery Floss & Backstock Tracker</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        craft: {
-                            50: '#fdf8f6',
-                            100: '#f2e8e5',
-                            500: '#e07a5f',
-                            600: '#d15d3d',
-                            700: '#b04326',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        @media print {
-            header, #inventory-filters, #view-mode-toggle, .no-print {
-                display: none !important;
-            }
-            body {
-                background: white !important;
-            }
-            #shopping-container {
-                display: block !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMC Embroidery Floss & Backstock Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @media print {
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
 </head>
-<body class="h-full text-slate-800 font-sans flex flex-col min-h-screen">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-    <!-- Navigation / Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo / Title -->
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-100">
-                        <i data-lucide="scissors" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-lg text-slate-900 leading-tight">ThreadVault</h1>
-                        <p class="text-xs text-slate-500">DMC Floss & Backstock Tracker</p>
-                    </div>
-                </div>
-
-                <!-- Header Actions -->
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button onclick="generateShareableLink()" title="Share Current Inventory via URL Link" class="inline-flex items-center gap-1 px-2.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-xs sm:text-sm rounded-lg transition-all">
-                        <i data-lucide="share-2" class="w-4 h-4"></i>
-                        <span class="hidden md:inline">Share Link</span>
-                    </button>
-
-                    <button onclick="openModal('addModal')" class="inline-flex items-center gap-1 px-2.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs sm:text-sm rounded-lg shadow-sm transition-all">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Add Floss</span>
-                    </button>
-
-                    <button onclick="openModal('cloudGuideModal')" title="How to Store or Host on Google" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                        <i data-lucide="cloud" class="w-5 h-5"></i>
-                    </button>
-                    
-                    <button onclick="exportData()" title="Export JSON File" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                        <i data-lucide="download" class="w-5 h-5"></i>
-                    </button>
-                    
-                    <label title="Import JSON File" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors">
-                        <i data-lucide="upload" class="w-5 h-5"></i>
-                        <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
-                    </label>
-
-                    <button onclick="openModal('resetModal')" title="Reset Data / Clear Inventory" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
+  <!-- Header -->
+  <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-indigo-600 rounded-lg">
+          <i data-lucide="layers" class="w-6 h-6"></i>
         </div>
-    </header>
+        <div>
+          <h1 class="font-bold text-xl tracking-tight">DMC Thread Tracker</h1>
+          <p class="text-xs text-indigo-200">Main Storage & Backstock Inventory</p>
+        </div>
+      </div>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-        <!-- Stats Dashboard -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
-                    <i data-lucide="palette" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Colors</p>
-                    <p id="stat-total-colors" class="text-2xl font-bold text-slate-900">0</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
-                    <i data-lucide="layers" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Skeins</p>
-                    <p id="stat-active-skeins" class="text-2xl font-bold text-slate-900">0</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
-                    <i data-lucide="box" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Backstock</p>
-                    <p id="stat-backstock-skeins" class="text-2xl font-bold text-slate-900">0</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-                <div class="p-3 bg-rose-50 text-rose-600 rounded-lg">
-                    <i data-lucide="shopping-bag" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Need Restock</p>
-                    <p id="stat-need-restock" class="text-2xl font-bold text-slate-900">0</p>
-                </div>
-            </div>
+      <!-- Header Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center bg-indigo-800/80 px-2.5 py-1.5 rounded-lg border border-indigo-500/30 text-xs">
+          <span class="text-indigo-200 font-medium mr-2">Min Restock Qty:</span>
+          <select id="minThresholdSelect" onchange="changeMinThreshold(this.value)" class="bg-indigo-900 text-white font-bold rounded px-2 py-0.5 border border-indigo-400 focus:outline-none">
+            <option value="0">0 (Only empty)</option>
+            <option value="1">1 skein</option>
+            <option value="2">2 skeins</option>
+            <option value="3">3 skeins</option>
+          </select>
         </div>
 
-        <!-- Controls & Filters Bar -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <!-- Tabs / View Modes -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
-                <div class="flex bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
-                    <button id="tab-inventory" onclick="switchTab('inventory')" class="flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm">
-                        <i data-lucide="grid" class="w-4 h-4 inline mr-1.5"></i> Inventory
-                    </button>
-                    <button id="tab-shopping" onclick="switchTab('shopping')" class="flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900">
-                        <i data-lucide="shopping-cart" class="w-4 h-4 inline mr-1.5"></i> Shopping List (<span id="shopping-count">0</span>)
-                    </button>
-                </div>
+        <button onclick="openShareModal()" class="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-md font-medium transition shadow-sm" title="Generate Shareable Link">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Share Link</span>
+        </button>
+        <button onclick="exportJSON()" class="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-md font-medium transition shadow-sm" title="Backup Database">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Export JSON</span>
+        </button>
+        <label class="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-md font-medium cursor-pointer transition shadow-sm" title="Restore Database">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Import JSON</span>
+          <input type="file" id="importFile" onchange="importJSON(event)" class="hidden" accept=".json">
+        </label>
+        <button onclick="openResetModal()" class="p-2 bg-indigo-800 hover:bg-rose-600 text-white rounded-md transition shadow-sm" title="Reset Options">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+        <button onclick="openCustomColorModal()" class="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs px-3 py-2 rounded-md font-medium transition shadow-sm">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Add Custom</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-                <!-- Display Format Toggle -->
-                <div id="view-mode-toggle" class="flex items-center gap-2 self-end sm:self-auto">
-                    <span class="text-xs text-slate-500 font-medium">Layout:</span>
-                    <button onclick="setViewMode('grid')" id="btn-grid" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md bg-slate-100">
-                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="setViewMode('table')" id="btn-table" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md">
-                        <i data-lucide="list" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
+  <!-- Notification Banner -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-sm px-4 py-3 rounded-lg shadow-xl flex items-center space-x-2 border border-slate-700">
+    <i data-lucide="info" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg">Action completed successfully.</span>
+  </div>
 
-            <!-- Search and Filter Inputs -->
-            <div id="inventory-filters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div class="relative">
-                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="renderInventory()" placeholder="Search color # or name..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all">
-                </div>
-
-                <select id="categoryFilter" onchange="renderInventory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all">
-                    <option value="ALL">All Categories</option>
-                    <option value="LIGHT_EFFECTS">✨ Light Effects Only</option>
-                    <option value="Reds & Pinks">Reds & Pinks</option>
-                    <option value="Oranges & Yellows">Oranges & Yellows</option>
-                    <option value="Greens">Greens</option>
-                    <option value="Blues">Blues</option>
-                    <option value="Purples">Purples</option>
-                    <option value="Browns & Earthy">Browns & Earthy</option>
-                    <option value="Neutrals & Monochromes">Neutrals & Monochromes</option>
-                    <option value="Specialty & Metallics">Specialty & Metallics</option>
-                </select>
-
-                <select id="statusFilter" onchange="renderInventory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all">
-                    <option value="ALL">All Stock Statuses</option>
-                    <option value="IN_STOCK">In Stock (> 0 active)</option>
-                    <option value="LOW_STOCK">Low Stock (≤ threshold)</option>
-                    <option value="OUT_OF_STOCK">Out of Stock (0 active)</option>
-                    <option value="HAS_BACKSTOCK">Has Backstock</option>
-                </select>
-
-                <button onclick="resetFilters()" class="w-full px-3 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">
-                    Reset Filters
-                </button>
-            </div>
-        </div>
-
-        <!-- Inventory Container -->
-        <div id="inventory-container" class="space-y-4">
-            <div id="inventory-display"></div>
-        </div>
-
-        <!-- Shopping List Tab Container -->
-        <div id="shopping-container" class="hidden space-y-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
-                <div>
-                    <h2 class="text-base font-semibold text-slate-900">Automatic Shopping List</h2>
-                    <p class="text-xs text-slate-500">Items that are out of stock or low with no backstock remaining.</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="copyShoppingList()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy List
-                    </button>
-                    <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all">
-                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print List
-                    </button>
-                </div>
-            </div>
-
-            <div id="shopping-list-display" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"></div>
-        </div>
-
-    </main>
-
-    <!-- Modal: Shared Link Loaded Prompt -->
-    <div id="sharedModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-1">
-                <i data-lucide="share-2" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg text-slate-900">Shared Inventory Link Received</h3>
-                <p class="text-xs text-slate-500 mt-1">A friend shared a DMC thread inventory list with you! How would you like to load it?</p>
-            </div>
-
-            <div class="space-y-2 pt-2">
-                <button onclick="applySharedData('replace')" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl text-left transition-all flex items-center justify-between">
-                    <span>Replace My Current Inventory</span>
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </button>
-                <button onclick="applySharedData('merge')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-sm rounded-xl text-left transition-all flex items-center justify-between">
-                    <span>Merge with Existing Inventory</span>
-                    <i data-lucide="git-merge" class="w-4 h-4"></i>
-                </button>
-                <button onclick="closeModal('sharedModal')" class="w-full py-2 text-slate-400 hover:text-slate-600 font-medium text-xs text-center transition-all">
-                    Ignore Shared Data
-                </button>
-            </div>
-        </div>
+  <!-- Dashboard Overview -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Colors</span>
+        <span id="statTotal" class="text-2xl font-bold text-slate-800 mt-1">0</span>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">In Active Stock</span>
+        <span id="statActive" class="text-2xl font-bold text-emerald-600 mt-1">0</span>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Has Backstock</span>
+        <span id="statBackstock" class="text-2xl font-bold text-blue-600 mt-1">0</span>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Low Stock</span>
+        <span id="statLow" class="text-2xl font-bold text-amber-600 mt-1">0</span>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-1 flex flex-col justify-between">
+        <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">Need to Buy</span>
+        <span id="statShopping" class="text-2xl font-bold text-rose-600 mt-1">0</span>
+      </div>
     </div>
 
-    <!-- Modal: How to host on Google / Storage Info -->
-    <div id="cloudGuideModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <div class="flex items-center gap-2">
-                    <div class="p-2 bg-sky-50 text-sky-600 rounded-lg">
-                        <i data-lucide="cloud" class="w-5 h-5"></i>
-                    </div>
-                    <h3 class="font-bold text-lg text-slate-900">Storage & Hosting on Google</h3>
-                </div>
-                <button onclick="closeModal('cloudGuideModal')" class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="space-y-4 text-xs text-slate-600 leading-relaxed">
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
-                    <p class="font-bold text-slate-800">🔒 Data Privacy Guarantee</p>
-                    <p>Each device or web browser maintains its own **private local database**. Sharing this app with a friend will **never** alter your own data unless you manually import a shared link or file.</p>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-slate-800 text-sm mb-1">Option 1: Google Drive (File Storage & Easy Sharing)</h4>
-                    <ol class="list-decimal pl-4 space-y-1">
-                        <li>Save this webpage file (e.g. <code class="bg-slate-100 px-1 py-0.5 rounded">ThreadVault.html</code>) on your computer.</li>
-                        <li>Upload it to your <strong>Google Drive</strong> folder.</li>
-                        <li>To open or use it: Download it to any computer or phone and double-click to open in Safari, Chrome, or Edge.</li>
-                        <li>To share with a friend: Right-click the file in Google Drive, select <strong>Share</strong>, and send her the Google Drive link so she can download her own separate copy!</li>
-                    </ol>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-slate-800 text-sm mb-1">Option 2: Free Live Website Hosting (GitHub Pages / Netlify)</h4>
-                    <p class="mb-1">If you want a permanent link (e.g. <code class="bg-slate-100 px-1 py-0.5 rounded">my-floss.netlify.app</code>) that you and your friend can both bookmark:</p>
-                    <ul class="list-disc pl-4 space-y-1">
-                        <li>Upload this single file to <strong>Netlify Drop</strong> or <strong>GitHub Pages</strong> (100% free).</li>
-                        <li>You and your friend can visit the same URL, but your browser storage remains completely private and independent!</li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-slate-800 text-sm mb-1">Option 3: Real-Time Syncing across Devices</h4>
-                    <p>Use the <strong>"Share Link"</strong> or <strong>"Export JSON"</strong> button at any time to easily sync your latest floss counts to a friend or another device!</p>
-                </div>
-            </div>
-
-            <div class="pt-2 border-t border-slate-100 flex justify-end">
-                <button onclick="closeModal('cloudGuideModal')" class="px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-xl hover:bg-slate-800">Got it!</button>
-            </div>
-        </div>
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-slate-200 space-x-6">
+      <button id="tabInventoryBtn" onclick="switchTab('inventory')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center space-x-2">
+        <i data-lucide="grid" class="w-4 h-4"></i>
+        <span>Full Catalog & Inventory</span>
+      </button>
+      <button id="tabShoppingBtn" onclick="switchTab('shopping')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+        <span>Shopping Restock List</span>
+        <span id="shoppingBadge" class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+      </button>
     </div>
 
-    <!-- Add Custom Color Modal -->
-    <div id="addModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-lg text-slate-900">Add DMC Color</h3>
-                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <form id="addFlossForm" onsubmit="handleAddFloss(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">DMC Number *</label>
-                    <input type="text" id="addNumber" required placeholder="e.g. 310, B5200, E3821" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Color Name *</label>
-                    <input type="text" id="addName" required placeholder="e.g. Black" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                </div>
-
-                <div class="flex items-center gap-2 py-1">
-                    <input type="checkbox" id="addIsLightEffects" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-slate-300">
-                    <label for="addIsLightEffects" class="text-xs font-semibold text-slate-700 flex items-center gap-1 cursor-pointer">
-                        ✨ DMC Light Effects Metallic / Specialty
-                    </label>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Category</label>
-                        <select id="addCategory" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                            <option value="Reds & Pinks">Reds & Pinks</option>
-                            <option value="Oranges & Yellows">Oranges & Yellows</option>
-                            <option value="Greens">Greens</option>
-                            <option value="Blues">Blues</option>
-                            <option value="Purples">Purples</option>
-                            <option value="Browns & Earthy">Browns & Earthy</option>
-                            <option value="Neutrals & Monochromes">Neutrals & Monochromes</option>
-                            <option value="Specialty & Metallics">Specialty & Metallics</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Color Swatch (Hex)</label>
-                        <div class="flex gap-2">
-                            <input type="color" id="addHexPicker" value="#E07A5F" onchange="document.getElementById('addHex').value = this.value" class="w-10 h-9 p-0.5 border border-slate-200 rounded-lg cursor-pointer">
-                            <input type="text" id="addHex" value="#E07A5F" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Active Skeins</label>
-                        <input type="number" id="addActive" min="0" value="1" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Backstock</label>
-                        <input type="number" id="addBackstock" min="0" value="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Min Threshold</label>
-                        <input type="number" id="addThreshold" min="1" value="1" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-lg">Save Color</button>
-                </div>
-            </form>
+    <!-- TAB 1: Inventory View -->
+    <section id="tabInventory" class="space-y-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <div class="relative md:col-span-5">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+            <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="Search color number or name (e.g., 310, E321, Black)..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div class="md:col-span-4">
+            <select id="categoryFilter" onchange="renderCatalog()" class="w-full py-2 px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+              <option value="ALL">All Categories</option>
+              <option value="LIGHT_EFFECTS">✨ DMC Light Effects Only</option>
+              <option value="Reds & Pinks">Reds & Pinks</option>
+              <option value="Yellows & Oranges">Yellows & Oranges</option>
+              <option value="Greens">Greens</option>
+              <option value="Blues & Violets">Blues & Violets</option>
+              <option value="Browns & Earth">Browns & Earth</option>
+              <option value="Greys & Black">Greys & Black</option>
+              <option value="Whites & Neutrals">Whites & Neutrals</option>
+            </select>
+          </div>
+          <div class="md:col-span-3">
+            <select id="statusFilter" onchange="renderCatalog()" class="w-full py-2 px-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+              <option value="ALL">All Stock Statuses</option>
+              <option value="ACTIVE">In Main Storage (>0)</option>
+              <option value="BACKSTOCK">Has Extra Backstock (>0)</option>
+              <option value="LOW">Low Stock (≤ threshold)</option>
+              <option value="MANUAL">Pinned to Shopping List 🛒</option>
+              <option value="EMPTY">Out of Stock (0 Total)</option>
+            </select>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <!-- Reset / Clear Data Modal -->
-    <div id="resetModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-100 space-y-4">
-            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg text-slate-900">Reset Inventory Data</h3>
-                <p class="text-xs text-slate-500 mt-1">Choose an option below to reset your quantities or restore original default settings.</p>
-            </div>
+      <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+      <div id="noResults" class="hidden text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
+        <i data-lucide="search-x" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
+        <p class="text-slate-500 font-medium">No thread colors match your search criteria.</p>
+      </div>
+    </section>
 
-            <div class="space-y-2 pt-1">
-                <button onclick="handleReset('zero')" class="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 font-medium text-xs rounded-xl text-left border border-amber-200 transition-colors">
-                    Zero Out All Quantities (Keep Custom Colors)
-                </button>
-                <button onclick="handleReset('default')" class="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-800 font-medium text-xs rounded-xl text-left border border-rose-200 transition-colors">
-                    Reset Entire Catalog to Default Starter Seed
-                </button>
-                <button onclick="closeModal('resetModal')" class="w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium text-xs rounded-xl transition-colors">
-                    Cancel
-                </button>
-            </div>
+    <!-- TAB 2: Shopping List View -->
+    <section id="tabShopping" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="font-bold text-slate-800 text-lg">Threads to Buy</h2>
+          <p class="text-xs text-slate-500">Includes items below your restock threshold or manually added to your shopping list.</p>
         </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="copyShoppingList()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-2 rounded-md font-medium transition flex items-center space-x-1">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span>Copy Text List</span>
+          </button>
+          <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-2 rounded-md font-medium transition flex items-center space-x-1">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>Print List</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="printableArea" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div id="shoppingListContainer" class="divide-y divide-slate-100"></div>
+        <div id="shoppingEmpty" class="hidden text-center py-12">
+          <i data-lucide="check-circle" class="w-12 h-12 text-emerald-500 mx-auto mb-2"></i>
+          <p class="text-slate-700 font-bold text-lg">Your Restock List is Clear!</p>
+          <p class="text-slate-500 text-sm">All catalog threads meet your minimum stock threshold and no items are manually pinned.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Share Link Modal -->
+  <div id="shareModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
+          <i data-lucide="share-2" class="w-5 h-5 text-indigo-600"></i>
+          <span>Share Your Floss Collection</span>
+        </h3>
+        <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        This link compresses your non-zero thread quantities and shopping list items into a compact web URL. Anyone opening it can load or merge your numbers into their app without affecting your copy!
+      </p>
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-slate-700">Shareable URL</label>
+        <div class="flex items-center space-x-2">
+          <input type="text" id="shareUrlInput" readonly class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-slate-50 text-slate-600 select-all">
+          <button onclick="copyShareUrl()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-lg font-medium flex items-center space-x-1 shrink-0">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            <span>Copy</span>
+          </button>
+        </div>
+      </div>
+      <div class="pt-2 text-right">
+        <button onclick="closeShareModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-medium text-slate-700">Close</button>
+      </div>
     </div>
-
-    <script>
-        // Default DMC Catalog Data Seed with Light Effects and numerically sorted entries
-        const DEFAULT_DMC_DATA = [
-            // Standard non-numeric whites & neutrals
-            { id: 'B5200', number: 'B5200', name: 'Snow White', hex: '#FFFFFF', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 2, threshold: 1 },
-            { id: 'BLANC', number: 'BLANC', name: 'White', hex: '#FDFBF7', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: 'ECRU', number: 'ECRU', name: 'Ecru', hex: '#F3EAD3', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            
-            // 01-35 Series
-            { id: '01', number: '01', name: 'White Tin', hex: '#EBEBEB', category: 'Neutrals & Monochromes', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '02', number: '02', name: 'Tin Medium Light', hex: '#D6D6D6', category: 'Neutrals & Monochromes', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '03', number: '03', name: 'Tin Medium', hex: '#B8B8B8', category: 'Neutrals & Monochromes', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '15', number: '15', name: 'Apple Blossom', hex: '#F6CFD7', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '35', number: '35', name: 'Fuchsia Very Dark', hex: '#871646', category: 'Reds & Pinks', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-
-            // Standard Numeric Flosses
-            { id: '150', number: '150', name: 'Dusty Rose Very Dark', hex: '#AB1346', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '208', number: '208', name: 'Lavender Very Dark', hex: '#834080', category: 'Purples', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '310', number: '310', name: 'Black', hex: '#000000', category: 'Neutrals & Monochromes', isLightEffects: false, active: 2, backstock: 3, threshold: 1 },
-            { id: '319', number: '319', name: 'Pistachio Green Very Dark', hex: '#1B4D2E', category: 'Greens', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '321', number: '321', name: 'Red', hex: '#C71585', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '414', number: '414', name: 'Steel Gray Dark', hex: '#8C8C8C', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '437', number: '437', name: 'Tan Light', hex: '#E0AD7A', category: 'Browns & Earthy', isLightEffects: false, active: 2, backstock: 0, threshold: 1 },
-            { id: '550', number: '550', name: 'Violet Very Dark', hex: '#4A0E4E', category: 'Purples', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '602', number: '602', name: 'Cranberry Medium', hex: '#E22E64', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '666', number: '666', name: 'Bright Red', hex: '#E31B23', category: 'Reds & Pinks', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '700', number: '700', name: 'Green Bright', hex: '#00873D', category: 'Greens', isLightEffects: false, active: 2, backstock: 0, threshold: 1 },
-            { id: '742', number: '742', name: 'Tangerine Light', hex: '#FFAE00', category: 'Oranges & Yellows', isLightEffects: false, active: 0, backstock: 1, threshold: 1 },
-            { id: '796', number: '796', name: 'Royal Blue Dark', hex: '#1034A6', category: 'Blues', isLightEffects: false, active: 1, backstock: 1, threshold: 1 },
-            { id: '815', number: '815', name: 'Garnet Medium', hex: '#7A0016', category: 'Reds & Pinks', isLightEffects: false, active: 2, backstock: 1, threshold: 1 },
-            { id: '820', number: '820', name: 'Royal Blue Very Dark', hex: '#0D1B48', category: 'Blues', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
-            { id: '839', number: '839', name: 'Brown Dark', hex: '#433022', category: 'Browns & Earthy', isLightEffects: false, active: 1, backstock: 1, threshold: 1 },
-            { id: '907', number: '907', name: 'Parrot Green Light', hex: '#87C735', category: 'Greens', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '972', number: '972', name: 'Canary Yellow Deep', hex: '#FFBC00', category: 'Oranges & Yellows', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-            { id: '996', number: '996', name: 'Electric Blue Medium', hex: '#00A2E8', category: 'Blues', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
-
-            // Light Effects Series (Metallic & Specialty)
-            { id: 'E168', number: 'E168', name: 'Silver Light Effects', hex: '#C0C0C0', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
-            { id: 'E211', number: 'E211', name: 'Lilac Light Effects', hex: '#D8B2D8', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E310', number: 'E310', name: 'Ebony Light Effects', hex: '#1A1A1A', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
-            { id: 'E317', number: 'E317', name: 'Titanium Light Effects', hex: '#545454', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E321', number: 'E321', name: 'Red Ruby Light Effects', hex: '#D61C38', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
-            { id: 'E415', number: 'E415', name: 'Pewter Light Effects', hex: '#999999', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E436', number: 'E436', name: 'Golden Brown Light Effects', hex: '#C48A47', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 1, threshold: 1 },
-            { id: 'E677', number: 'E677', name: 'White Gold Light Effects', hex: '#E6D79C', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
-            { id: 'E705', number: 'E705', name: 'Green Light Effects', hex: '#2E8B57', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E815', number: 'E815', name: 'Garnet Light Effects', hex: '#800000', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
-            { id: 'E825', number: 'E825', name: 'Blue Light Effects', hex: '#1E3A8A', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E898', number: 'E898', name: 'Dark Oak Light Effects', hex: '#3B2F2F', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E940', number: 'E940', name: 'Glow-in-the-Dark Light Effects', hex: '#E0FFB3', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 1, threshold: 1 },
-            { id: 'E3821', number: 'E3821', name: 'Light Gold Light Effects', hex: '#D4AF37', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
-            { id: 'E3852', number: 'E3852', name: 'Dark Gold Light Effects', hex: '#AA771C', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
-            { id: 'E5200', number: 'E5200', name: 'Pearlescent White Light Effects', hex: '#F8F9FA', category: 'Specialty & Metallics', isLightEffects: true, active: 2, backstock: 1, threshold: 1 }
-        ];
-
-        let inventory = [];
-        let pendingSharedData = null;
-        let activeTab = 'inventory';
-        let viewMode = 'grid';
-        let checkedShoppingItems = new Set();
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadInventory();
-            checkSharedURL();
-            renderStats();
-            renderInventory();
-            lucide.createIcons();
-        });
-
-        // Helper function to numerically sort DMC code strings
-        function sortDMCNumbers(a, b) {
-            const numA = a.number.toUpperCase();
-            const numB = b.number.toUpperCase();
-
-            // Special non-numeric sorting priorities
-            const priority = { 'B5200': 1, 'BLANC': 2, 'ECRU': 3 };
-            if (priority[numA] && priority[numB]) return priority[numA] - priority[numB];
-            if (priority[numA]) return -1;
-            if (priority[numB]) return 1;
-
-            // Extract numeric parts
-            const cleanA = numA.replace(/[^0-9]/g, '');
-            const cleanB = numB.replace(/[^0-9]/g, '');
-
-            const valA = cleanA ? parseInt(cleanA, 10) : 999999;
-            const valB = cleanB ? parseInt(cleanB, 10) : 999999;
-
-            if (valA !== valB) {
-                return valA - valB;
-            }
-
-            return numA.localeCompare(numB);
-        }
-
-        function loadInventory() {
-            const saved = localStorage.getItem('dmc_inventory_data');
-            if (saved) {
-                try {
-                    inventory = JSON.parse(saved);
-                } catch (e) {
-                    inventory = [...DEFAULT_DMC_DATA];
-                }
-            } else {
-                inventory = [...DEFAULT_DMC_DATA];
-                saveInventory();
-            }
-            inventory.sort(sortDMCNumbers);
-        }
-
-        function saveInventory() {
-            inventory.sort(sortDMCNumbers);
-            localStorage.setItem('dmc_inventory_data', JSON.stringify(inventory));
-            renderStats();
-            renderShoppingList();
-        }
-
-        function generateShareableLink() {
-            try {
-                const compact = inventory.map(item => ({
-                    n: item.number,
-                    m: item.name,
-                    c: item.category,
-                    h: item.hex,
-                    e: item.isLightEffects ? 1 : 0,
-                    a: item.active,
-                    b: item.backstock,
-                    t: item.threshold
-                }));
-
-                const jsonStr = JSON.stringify(compact);
-                const encoded = btoa(encodeURIComponent(jsonStr));
-                const shareUrl = `${window.location.origin}${window.location.pathname}#shared=${encoded}`;
-
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(shareUrl);
-                } else {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = shareUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-
-                alert("Shareable Link copied to clipboard! Anyone who opens this link can load your floss inventory.");
-            } catch (err) {
-                alert("Unable to generate share link. Try exporting as JSON instead.");
-            }
-        }
-
-        function checkSharedURL() {
-            if (!window.location.hash || !window.location.hash.includes('#shared=')) return;
-
-            try {
-                const encoded = window.location.hash.replace('#shared=', '');
-                const jsonStr = decodeURIComponent(atob(encoded));
-                const raw = JSON.parse(jsonStr);
-
-                if (Array.isArray(raw)) {
-                    pendingSharedData = raw.map((item, idx) => ({
-                        id: item.n || Date.now() + idx,
-                        number: item.n,
-                        name: item.m,
-                        category: item.c,
-                        hex: item.h,
-                        isLightEffects: !!item.e,
-                        active: item.a || 0,
-                        backstock: item.b || 0,
-                        threshold: item.t || 1
-                    }));
-
-                    openModal('sharedModal');
-                }
-            } catch (e) {
-                console.error("Failed to parse shared URL payload", e);
-            }
-        }
-
-        function applySharedData(mode) {
-            if (!pendingSharedData) return;
-
-            if (mode === 'replace') {
-                inventory = pendingSharedData;
-            } else if (mode === 'merge') {
-                pendingSharedData.forEach(shared => {
-                    const existing = inventory.find(i => i.number.toLowerCase() === shared.number.toLowerCase());
-                    if (existing) {
-                        existing.active = shared.active;
-                        existing.backstock = shared.backstock;
-                    } else {
-                        inventory.push(shared);
-                    }
-                });
-            }
-
-            history.replaceState(null, "", window.location.pathname);
-            saveInventory();
-            renderInventory();
-            closeModal('sharedModal');
-            alert("Shared inventory successfully loaded!");
-        }
-
-        function handleReset(type) {
-            if (type === 'zero') {
-                inventory.forEach(item => {
-                    item.active = 0;
-                    item.backstock = 0;
-                });
-            } else if (type === 'default') {
-                inventory = [...DEFAULT_DMC_DATA];
-            }
-
-            saveInventory();
-            renderInventory();
-            closeModal('resetModal');
-        }
-
-        function renderStats() {
-            const totalColors = inventory.length;
-            const activeSkeins = inventory.reduce((acc, curr) => acc + (parseInt(curr.active) || 0), 0);
-            const backstockSkeins = inventory.reduce((acc, curr) => acc + (parseInt(curr.backstock) || 0), 0);
-            const restockCount = inventory.filter(item => item.active <= item.threshold && item.backstock === 0).length;
-
-            document.getElementById('stat-total-colors').textContent = totalColors;
-            document.getElementById('stat-active-skeins').textContent = activeSkeins;
-            document.getElementById('stat-backstock-skeins').textContent = backstockSkeins;
-            document.getElementById('stat-need-restock').textContent = restockCount;
-            document.getElementById('shopping-count').textContent = restockCount;
-        }
-
-        function switchTab(tab) {
-            activeTab = tab;
-            const invBtn = document.getElementById('tab-inventory');
-            const shopBtn = document.getElementById('tab-shopping');
-            const invContainer = document.getElementById('inventory-container');
-            const shopContainer = document.getElementById('shopping-container');
-            const filters = document.getElementById('inventory-filters');
-            const viewToggle = document.getElementById('view-mode-toggle');
-
-            if (tab === 'inventory') {
-                invBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm";
-                shopBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
-                invContainer.classList.remove('hidden');
-                shopContainer.classList.add('hidden');
-                filters.classList.remove('hidden');
-                viewToggle.classList.remove('hidden');
-            } else {
-                shopBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm";
-                invBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
-                shopContainer.classList.remove('hidden');
-                invContainer.classList.add('hidden');
-                filters.classList.add('hidden');
-                viewToggle.classList.add('hidden');
-                renderShoppingList();
-            }
-        }
-
-        function setViewMode(mode) {
-            viewMode = mode;
-            document.getElementById('btn-grid').className = mode === 'grid' ? "p-1.5 text-slate-600 rounded-md bg-slate-100" : "p-1.5 text-slate-600 hover:bg-slate-100 rounded-md";
-            document.getElementById('btn-table').className = mode === 'table' ? "p-1.5 text-slate-600 rounded-md bg-slate-100" : "p-1.5 text-slate-600 hover:bg-slate-100 rounded-md";
-            renderInventory();
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categoryFilter').value = 'ALL';
-            document.getElementById('statusFilter').value = 'ALL';
-            renderInventory();
-        }
-
-        function getFilteredInventory() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const category = document.getElementById('categoryFilter').value;
-            const status = document.getElementById('statusFilter').value;
-
-            return inventory.filter(item => {
-                const matchesSearch = item.number.toLowerCase().includes(query) || item.name.toLowerCase().includes(query);
-                
-                let matchesCategory = true;
-                if (category === 'LIGHT_EFFECTS') {
-                    matchesCategory = item.isLightEffects === true;
-                } else if (category !== 'ALL') {
-                    matchesCategory = item.category === category;
-                }
-
-                let matchesStatus = true;
-                if (status === 'IN_STOCK') matchesStatus = item.active > 0;
-                else if (status === 'LOW_STOCK') matchesStatus = item.active <= item.threshold && item.active > 0;
-                else if (status === 'OUT_OF_STOCK') matchesStatus = item.active === 0;
-                else if (status === 'HAS_BACKSTOCK') matchesStatus = item.backstock > 0;
-
-                return matchesSearch && matchesCategory && matchesStatus;
-            });
-        }
-
-        function renderInventory() {
-            const filtered = getFilteredInventory();
-            const container = document.getElementById('inventory-display');
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
-                        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-3">
-                            <i data-lucide="search-x" class="w-6 h-6"></i>
-                        </div>
-                        <p class="font-semibold text-slate-700">No DMC floss colors match your criteria</p>
-                        <p class="text-xs text-slate-400 mt-1">Try resetting filters or adding a new color.</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            if (viewMode === 'grid') {
-                let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">';
-                filtered.forEach(item => {
-                    const isLow = item.active <= item.threshold && item.active > 0;
-                    const isOut = item.active === 0;
-
-                    html += `
-                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative flex flex-col justify-between space-y-3">
-                            <div>
-                                <div class="flex items-start gap-3">
-                                    <div class="w-10 h-10 rounded-lg shadow-inner border border-black/10 flex-shrink-0" style="background-color: ${item.hex}"></div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-bold text-slate-900 text-base">#${item.number}</span>
-                                            ${isOut ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 rounded-full">Out of Stock</span>' : 
-                                              isLow ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full">Low Stock</span>' : ''}
-                                        </div>
-                                        <p class="text-xs text-slate-600 truncate font-medium">${item.name}</p>
-                                        <p class="text-[10px] text-slate-400 truncate">${item.category}</p>
-                                    </div>
-                                </div>
-                                ${item.isLightEffects ? `
-                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[10px] font-bold">
-                                        ✨ Light Effects
-                                    </div>
-                                ` : ''}
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
-                                    <span class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Active</span>
-                                    <div class="flex items-center justify-between gap-1">
-                                        <button onclick="updateQty('${item.id}', 'active', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">-</button>
-                                        <span class="font-bold text-sm text-slate-800">${item.active}</span>
-                                        <button onclick="updateQty('${item.id}', 'active', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">+</button>
-                                    </div>
-                                </div>
-
-                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
-                                    <span class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Backstock</span>
-                                    <div class="flex items-center justify-between gap-1">
-                                        <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">-</button>
-                                        <span class="font-bold text-sm text-slate-800">${item.backstock}</span>
-                                        <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">+</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex justify-between items-center text-xs text-slate-400 pt-1">
-                                <span>Min: ${item.threshold}</span>
-                                <button onclick="deleteColor('${item.id}')" class="text-slate-300 hover:text-rose-500 transition-colors" title="Delete Color">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                container.innerHTML = html;
-            } else {
-                let html = `
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-3">Color</th>
-                                    <th class="p-3">Number</th>
-                                    <th class="p-3">Name</th>
-                                    <th class="p-3">Type</th>
-                                    <th class="p-3 text-center">Active</th>
-                                    <th class="p-3 text-center">Backstock</th>
-                                    <th class="p-3 text-center">Threshold</th>
-                                    <th class="p-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                `;
-
-                filtered.forEach(item => {
-                    html += `
-                        <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="p-3">
-                                <div class="w-7 h-7 rounded shadow-inner border border-black/10" style="background-color: ${item.hex}"></div>
-                            </td>
-                            <td class="p-3 font-bold text-slate-900">#${item.number}</td>
-                            <td class="p-3 font-medium text-slate-700">${item.name}</td>
-                            <td class="p-3 text-xs">
-                                ${item.isLightEffects ? 
-                                    '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-bold">✨ Light Effects</span>' : 
-                                    `<span class="text-slate-500">${item.category}</span>`}
-                            </td>
-                            <td class="p-3">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick="updateQty('${item.id}', 'active', -1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">-</button>
-                                    <span class="font-semibold text-slate-800 w-4 text-center">${item.active}</span>
-                                    <button onclick="updateQty('${item.id}', 'active', 1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">+</button>
-                                </div>
-                            </td>
-                            <td class="p-3">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">-</button>
-                                    <span class="font-semibold text-slate-800 w-4 text-center">${item.backstock}</span>
-                                    <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">+</button>
-                                </div>
-                            </td>
-                            <td class="p-3 text-center text-xs text-slate-500">${item.threshold}</td>
-                            <td class="p-3 text-right">
-                                <button onclick="deleteColor('${item.id}')" class="text-slate-400 hover:text-rose-600 transition-colors p-1">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                container.innerHTML = html;
-            }
-
-            lucide.createIcons();
-        }
-
-        function updateQty(id, field, delta) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            if (field === 'active') {
-                item.active = Math.max(0, item.active + delta);
-            } else if (field === 'backstock') {
-                item.backstock = Math.max(0, item.backstock + delta);
-            }
-
-            saveInventory();
-            renderInventory();
-        }
-
-        function deleteColor(id) {
-            if (confirm("Are you sure you want to remove this DMC color from your tracker?")) {
-                inventory = inventory.filter(i => i.id !== id);
-                saveInventory();
-                renderInventory();
-            }
-        }
-
-        function handleAddFloss(event) {
-            event.preventDefault();
-            const number = document.getElementById('addNumber').value.trim();
-            const name = document.getElementById('addName').value.trim();
-            const category = document.getElementById('addCategory').value;
-            const hex = document.getElementById('addHex').value.trim();
-            const isLightEffects = document.getElementById('addIsLightEffects').checked;
-            const active = parseInt(document.getElementById('addActive').value) || 0;
-            const backstock = parseInt(document.getElementById('addBackstock').value) || 0;
-            const threshold = parseInt(document.getElementById('addThreshold').value) || 1;
-
-            if (!number || !name) return;
-
-            const existing = inventory.find(i => i.number.toLowerCase() === number.toLowerCase());
-            if (existing) {
-                alert(`DMC #${number} already exists in your inventory!`);
-                return;
-            }
-
-            const newItem = {
-                id: Date.now().toString(),
-                number,
-                name,
-                category,
-                hex,
-                isLightEffects,
-                active,
-                backstock,
-                threshold
-            };
-
-            inventory.push(newItem);
-            saveInventory();
-            renderInventory();
-            closeModal('addModal');
-            document.getElementById('addFlossForm').reset();
-        }
-
-        function renderShoppingList() {
-            const container = document.getElementById('shopping-list-display');
-            const needed = inventory.filter(item => item.active <= item.threshold && item.backstock === 0);
-
-            if (needed.length === 0) {
-                container.innerHTML = `
-                    <div class="p-12 text-center">
-                        <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-3">
-                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
-                        </div>
-                        <p class="font-semibold text-slate-800">Your thread stock is fully supplied!</p>
-                        <p class="text-xs text-slate-400 mt-1">No items are currently below low-stock threshold with empty backstock.</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            let html = '<div class="divide-y divide-slate-100">';
-            needed.forEach(item => {
-                const isChecked = checkedShoppingItems.has(item.id);
-                html += `
-                    <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors ${isChecked ? 'bg-slate-50/80 opacity-60' : ''}">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingCheck('${item.id}')" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300">
-                            <div class="w-6 h-6 rounded border border-black/10 shadow-inner" style="background-color: ${item.hex}"></div>
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <p class="font-bold text-sm text-slate-900 ${isChecked ? 'line-through' : ''}">#${item.number} - ${item.name}</p>
-                                    ${item.isLightEffects ? '<span class="px-1.5 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold">✨ Light Effects</span>' : ''}
-                                </div>
-                                <p class="text-xs text-slate-400">${item.category}</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-4">
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-rose-50 text-rose-600">
-                                ${item.active === 0 ? 'Out of Stock' : `Low (${item.active} left)`}
-                            </span>
-                            <button onclick="restockItem('${item.id}')" title="Mark Restocked (+1 Active)" class="text-xs font-semibold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Restock
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += '</div>';
-            container.innerHTML = html;
-            lucide.createIcons();
-        }
-
-        function toggleShoppingCheck(id) {
-            if (checkedShoppingItems.has(id)) {
-                checkedShoppingItems.delete(id);
-            } else {
-                checkedShoppingItems.add(id);
-            }
-            renderShoppingList();
-        }
-
-        function restockItem(id) {
-            const item = inventory.find(i => i.id === id);
-            if (item) {
-                item.active += 1;
-                saveInventory();
-                renderShoppingList();
-            }
-        }
-
-        function copyShoppingList() {
-            const needed = inventory.filter(item => item.active <= item.threshold && item.backstock === 0);
-            if (needed.length === 0) return;
-
-            const text = "DMC Floss Restock List:\n" + needed.map(i => `- DMC #${i.number} (${i.name})${i.isLightEffects ? ' [✨ Light Effects]' : ''}`).join('\n');
-            
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-            }
-            
-            alert("Shopping list copied to clipboard!");
-        }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `DMC_Floss_Inventory_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        inventory = imported;
-                        saveInventory();
-                        renderInventory();
-                        alert("Inventory successfully imported!");
-                    } else {
-                        alert("Invalid file format. Expected a JSON array of colors.");
-                    }
-                } catch (err) {
-                    alert("Error parsing JSON file.");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
+  </div>
+
+  <!-- Shared Data Receiver Prompt Modal -->
+  <div id="importPromptModal" class="hidden fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
+          <i data-lucide="download-cloud" class="w-5 h-5 text-emerald-600"></i>
+          <span>Incoming Shared Inventory</span>
+        </h3>
+      </div>
+      <p class="text-sm text-slate-600">
+        You opened a link containing inventory counts for <strong id="importCount" class="text-indigo-600">0</strong> thread colors. How would you like to handle your data?
+      </p>
+      <div class="space-y-2 pt-2">
+        <button onclick="applySharedData('merge')" class="w-full p-3 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-emerald-800">Merge with My Quantities</div>
+            <div class="text-xs text-emerald-600">Adds incoming numbers to your existing counts</div>
+          </div>
+          <i data-lucide="plus" class="w-5 h-5 text-emerald-600"></i>
+        </button>
+        <button onclick="applySharedData('replace')" class="w-full p-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg text-left transition flex items-center justify-between">
+          <div>
+            <div class="text-xs font-bold text-rose-800">Replace My Entire Inventory</div>
+            <div class="text-xs text-rose-600">Overwrites your inventory with the shared data</div>
+          </div>
+          <i data-lucide="refresh-cw" class="w-5 h-5 text-rose-600"></i>
+        </button>
+      </div>
+      <div class="pt-2 text-right">
+        <button onclick="closeImportPromptModal()" class="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-800">Cancel & Keep My Current Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Options Modal -->
+  <div id="resetModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i>
+          <span>Reset Inventory</span>
+        </h3>
+        <button onclick="closeResetModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">Choose how you want to clear your local database:</p>
+      <div class="space-y-3">
+        <button onclick="executeReset('zero')" class="w-full p-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg text-left transition">
+          <div class="text-xs font-bold text-amber-900">Zero Out Quantities</div>
+          <div class="text-xs text-amber-700">Sets all main storage, backstock, and shopping list pins to 0 while keeping custom colors.</div>
+        </button>
+        <button onclick="executeReset('factory')" class="w-full p-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg text-left transition">
+          <div class="text-xs font-bold text-rose-900">Reset to Default Catalog</div>
+          <div class="text-xs text-rose-700">Deletes custom added threads and clears all quantities.</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Color Modal -->
+  <div id="customColorModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800">Add Custom Color</h3>
+        <button onclick="closeCustomColorModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="saveCustomColor(event)" class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-700">DMC Code / Number</label>
+          <input type="text" id="newCode" required placeholder="e.g. 3866, E310" class="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-700">Color Name</label>
+          <input type="text" id="newName" required placeholder="e.g. Winter White" class="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-700">Category</label>
+          <select id="newCategory" class="w-full p-2 border rounded-lg text-sm bg-white">
+            <option value="Reds & Pinks">Reds & Pinks</option>
+            <option value="Yellows & Oranges">Yellows & Oranges</option>
+            <option value="Greens">Greens</option>
+            <option value="Blues & Violets">Blues & Violets</option>
+            <option value="Browns & Earth">Browns & Earth</option>
+            <option value="Greys & Black">Greys & Black</option>
+            <option value="Whites & Neutrals">Whites & Neutrals</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-2 pt-1">
+          <input type="checkbox" id="newIsLightEffects" class="w-4 h-4 text-indigo-600 rounded">
+          <label for="newIsLightEffects" class="text-xs font-semibold text-slate-700">✨ DMC Light Effects Thread</label>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-700">Hex Swatch Color</label>
+          <input type="color" id="newHex" value="#6366f1" class="w-full h-10 border rounded-lg cursor-pointer">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeCustomColorModal()" class="px-4 py-2 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700">Save Color</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // EXPANDED
