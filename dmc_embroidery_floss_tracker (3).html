@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DMC Embroidery Floss & Backstock Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        @media print {
+            header, #inventory-filters, #view-mode-toggle, .no-print { display: none !important; }
+            body { background: white !important; }
+            #shopping-container { display: block !important; }
+        }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans flex flex-col min-h-screen">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / Title -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-100">
+                        <i data-lucide="scissors" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-slate-900 leading-tight">ThreadVault</h1>
+                        <p class="text-xs text-slate-500">DMC Floss & Backstock Tracker</p>
+                    </div>
+                </div>
+
+                <!-- Header Actions -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button onclick="openShareModal()" title="Share Inventory Link" class="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-xs sm:text-sm rounded-lg transition-all">
+                        <i data-lucide="share-2" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">Share Link</span>
+                    </button>
+
+                    <button onclick="openModal('addModal')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs sm:text-sm rounded-lg shadow-sm transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Add Floss</span>
+                    </button>
+
+                    <button onclick="exportData()" title="Export JSON File" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <label title="Import JSON File" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors">
+                        <i data-lucide="upload" class="w-5 h-5"></i>
+                        <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                    </label>
+
+                    <button onclick="openModal('resetModal')" title="Reset Data / Clear Inventory" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Stats Dashboard -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <i data-lucide="palette" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Colors</p>
+                    <p id="stat-total-colors" class="text-2xl font-bold text-slate-900">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Skeins</p>
+                    <p id="stat-active-skeins" class="text-2xl font-bold text-slate-900">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                    <i data-lucide="box" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Backstock</p>
+                    <p id="stat-backstock-skeins" class="text-2xl font-bold text-slate-900">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-rose-50 text-rose-600 rounded-lg">
+                    <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Need Restock</p>
+                    <p id="stat-need-restock" class="text-2xl font-bold text-slate-900">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls & Filters Bar -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+                <div class="flex bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
+                    <button id="tab-inventory" onclick="switchTab('inventory')" class="flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm">
+                        <i data-lucide="grid" class="w-4 h-4 inline mr-1.5"></i> Catalog
+                    </button>
+                    <button id="tab-shopping" onclick="switchTab('shopping')" class="flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900">
+                        <i data-lucide="shopping-cart" class="w-4 h-4 inline mr-1.5"></i> Restock List (<span id="shopping-count">0</span>)
+                    </button>
+                </div>
+
+                <div id="view-mode-toggle" class="flex items-center gap-2 self-end sm:self-auto">
+                    <span class="text-xs text-slate-500 font-medium">Layout:</span>
+                    <button onclick="setViewMode('grid')" id="btn-grid" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md bg-slate-100">
+                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="setViewMode('table')" id="btn-table" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-md">
+                        <i data-lucide="list" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search and Filter Inputs -->
+            <div id="inventory-filters" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="renderInventory()" placeholder="Search color # or name..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all">
+                </div>
+
+                <select id="categoryFilter" onchange="renderInventory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all">
+                    <option value="ALL">All Categories</option>
+                    <option value="LIGHT_EFFECTS">✨ Light Effects Only</option>
+                    <option value="Reds & Pinks">Reds & Pinks</option>
+                    <option value="Oranges & Yellows">Oranges & Yellows</option>
+                    <option value="Greens">Greens</option>
+                    <option value="Blues">Blues</option>
+                    <option value="Purples">Purples</option>
+                    <option value="Browns & Earthy">Browns & Earthy</option>
+                    <option value="Neutrals & Monochromes">Neutrals & Monochromes</option>
+                    <option value="Specialty & Metallics">Specialty & Metallics</option>
+                </select>
+
+                <select id="statusFilter" onchange="renderInventory()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition-all">
+                    <option value="ALL">All Stock Statuses</option>
+                    <option value="IN_STOCK">In Stock (> 0 active)</option>
+                    <option value="LOW_STOCK">Low Stock (≤ threshold)</option>
+                    <option value="OUT_OF_STOCK">Out of Stock (0 active)</option>
+                    <option value="HAS_BACKSTOCK">Has Backstock</option>
+                </select>
+
+                <button onclick="resetFilters()" class="w-full px-3 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Inventory Container -->
+        <div id="inventory-container" class="space-y-4">
+            <div id="inventory-display"></div>
+        </div>
+
+        <!-- Shopping List Container -->
+        <div id="shopping-container" class="hidden space-y-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <h2 class="text-base font-semibold text-slate-900">Automatic Shopping & Restock List</h2>
+                    <p class="text-xs text-slate-500">Items that are out of stock or low with no backstock remaining.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="copyShoppingList()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy List
+                    </button>
+                    <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print List
+                    </button>
+                </div>
+            </div>
+
+            <div id="shopping-list-display" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"></div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Share Link Output -->
+    <div id="shareLinkModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900">Share Inventory Link</h3>
+                </div>
+                <button onclick="closeModal('shareLinkModal')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 leading-relaxed">
+                Send this link to a friend! It encodes your non-zero thread quantities so they can view or merge your collection into their app.
+            </p>
+
+            <div class="space-y-2">
+                <input type="text" id="shareUrlInput" readonly class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none">
+                <button onclick="copyGeneratedShareLink()" id="btnCopyShareLink" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copy Link to Clipboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Shared Link Loaded Prompt -->
+    <div id="sharedModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-1">
+                <i data-lucide="cloud-download" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg text-slate-900">Shared Inventory Received</h3>
+                <p class="text-xs text-slate-500 mt-1">A shared DMC thread list with <span id="sharedItemCount" class="font-bold text-slate-800">0</span> items was opened! Choose how to handle it:</p>
+            </div>
+
+            <div class="space-y-2 pt-2">
+                <button onclick="applySharedData('merge')" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm rounded-xl text-left transition-all flex items-center justify-between">
+                    <span>Merge Counts with My Current Data</span>
+                    <i data-lucide="git-merge" class="w-4 h-4"></i>
+                </button>
+                <button onclick="applySharedData('replace')" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-sm rounded-xl text-left transition-all flex items-center justify-between">
+                    <span>Replace My Inventory Completely</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+                <button onclick="closeModal('sharedModal')" class="w-full py-2 text-slate-400 hover:text-slate-600 font-medium text-xs text-center transition-all">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Custom Color Modal -->
+    <div id="addModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-lg text-slate-900">Add DMC Color</h3>
+                <button onclick="closeModal('addModal')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="addFlossForm" onsubmit="handleAddFloss(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">DMC Number *</label>
+                    <input type="text" id="addNumber" required placeholder="e.g. 310, B5200, E3821" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1">Color Name *</label>
+                    <input type="text" id="addName" required placeholder="e.g. Black" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+
+                <div class="flex items-center gap-2 py-1">
+                    <input type="checkbox" id="addIsLightEffects" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-slate-300">
+                    <label for="addIsLightEffects" class="text-xs font-semibold text-slate-700 flex items-center gap-1 cursor-pointer">
+                        ✨ DMC Light Effects Metallic / Specialty
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Category</label>
+                        <select id="addCategory" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                            <option value="Reds & Pinks">Reds & Pinks</option>
+                            <option value="Oranges & Yellows">Oranges & Yellows</option>
+                            <option value="Greens">Greens</option>
+                            <option value="Blues">Blues</option>
+                            <option value="Purples">Purples</option>
+                            <option value="Browns & Earthy">Browns & Earthy</option>
+                            <option value="Neutrals & Monochromes">Neutrals & Monochromes</option>
+                            <option value="Specialty & Metallics">Specialty & Metallics</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Color Swatch (Hex)</label>
+                        <div class="flex gap-2">
+                            <input type="color" id="addHexPicker" value="#E07A5F" onchange="document.getElementById('addHex').value = this.value" class="w-10 h-9 p-0.5 border border-slate-200 rounded-lg cursor-pointer">
+                            <input type="text" id="addHex" value="#E07A5F" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Active Skeins</label>
+                        <input type="number" id="addActive" min="0" value="1" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Backstock</label>
+                        <input type="number" id="addBackstock" min="0" value="0" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Min Threshold</label>
+                        <input type="number" id="addThreshold" min="1" value="1" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium rounded-lg">Save Color</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reset / Clear Data Modal -->
+    <div id="resetModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-100 space-y-4">
+            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg text-slate-900">Reset Inventory Data</h3>
+                <p class="text-xs text-slate-500 mt-1">Choose an option below to reset quantities or restore default catalog state.</p>
+            </div>
+
+            <div class="space-y-2 pt-1">
+                <button onclick="handleReset('zero')" class="w-full py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 font-medium text-xs rounded-xl text-left border border-amber-200 transition-colors">
+                    Zero Out All Quantities (Keep Custom Items)
+                </button>
+                <button onclick="handleReset('default')" class="w-full py-2.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-800 font-medium text-xs rounded-xl text-left border border-rose-200 transition-colors">
+                    Reset Catalog to Default Seed State
+                </button>
+                <button onclick="closeModal('resetModal')" class="w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium text-xs rounded-xl transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Seed database
+        const DEFAULT_DMC_DATA = [
+            { id: 'B5200', number: 'B5200', name: 'Snow White', hex: '#FFFFFF', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 2, threshold: 1 },
+            { id: 'BLANC', number: 'BLANC', name: 'White', hex: '#FDFBF7', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: 'ECRU', number: 'ECRU', name: 'Ecru', hex: '#F3EAD3', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '01', number: '01', name: 'White Tin', hex: '#EBEBEB', category: 'Neutrals & Monochromes', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '02', number: '02', name: 'Tin Medium Light', hex: '#D6D6D6', category: 'Neutrals & Monochromes', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '03', number: '03', name: 'Tin Medium', hex: '#B8B8B8', category: 'Neutrals & Monochromes', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '15', number: '15', name: 'Apple Blossom', hex: '#F6CFD7', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '35', number: '35', name: 'Fuchsia Very Dark', hex: '#871646', category: 'Reds & Pinks', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '150', number: '150', name: 'Dusty Rose Very Dark', hex: '#AB1346', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '208', number: '208', name: 'Lavender Very Dark', hex: '#834080', category: 'Purples', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '310', number: '310', name: 'Black', hex: '#000000', category: 'Neutrals & Monochromes', isLightEffects: false, active: 2, backstock: 3, threshold: 1 },
+            { id: '319', number: '319', name: 'Pistachio Green Very Dark', hex: '#1B4D2E', category: 'Greens', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '321', number: '321', name: 'Red', hex: '#C71585', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '414', number: '414', name: 'Steel Gray Dark', hex: '#8C8C8C', category: 'Neutrals & Monochromes', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '437', number: '437', name: 'Tan Light', hex: '#E0AD7A', category: 'Browns & Earthy', isLightEffects: false, active: 2, backstock: 0, threshold: 1 },
+            { id: '550', number: '550', name: 'Violet Very Dark', hex: '#4A0E4E', category: 'Purples', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '602', number: '602', name: 'Cranberry Medium', hex: '#E22E64', category: 'Reds & Pinks', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '666', number: '666', name: 'Bright Red', hex: '#E31B23', category: 'Reds & Pinks', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '700', number: '700', name: 'Green Bright', hex: '#00873D', category: 'Greens', isLightEffects: false, active: 2, backstock: 0, threshold: 1 },
+            { id: '742', number: '742', name: 'Tangerine Light', hex: '#FFAE00', category: 'Oranges & Yellows', isLightEffects: false, active: 0, backstock: 1, threshold: 1 },
+            { id: '796', number: '796', name: 'Royal Blue Dark', hex: '#1034A6', category: 'Blues', isLightEffects: false, active: 1, backstock: 1, threshold: 1 },
+            { id: '815', number: '815', name: 'Garnet Medium', hex: '#7A0016', category: 'Reds & Pinks', isLightEffects: false, active: 2, backstock: 1, threshold: 1 },
+            { id: '820', number: '820', name: 'Royal Blue Very Dark', hex: '#0D1B48', category: 'Blues', isLightEffects: false, active: 0, backstock: 0, threshold: 1 },
+            { id: '839', number: '839', name: 'Brown Dark', hex: '#433022', category: 'Browns & Earthy', isLightEffects: false, active: 1, backstock: 1, threshold: 1 },
+            { id: '907', number: '907', name: 'Parrot Green Light', hex: '#87C735', category: 'Greens', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '972', number: '972', name: 'Canary Yellow Deep', hex: '#FFBC00', category: 'Oranges & Yellows', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+            { id: '996', number: '996', name: 'Electric Blue Medium', hex: '#00A2E8', category: 'Blues', isLightEffects: false, active: 1, backstock: 0, threshold: 1 },
+
+            // Light Effects
+            { id: 'E168', number: 'E168', name: 'Silver Light Effects', hex: '#C0C0C0', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
+            { id: 'E211', number: 'E211', name: 'Lilac Light Effects', hex: '#D8B2D8', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E310', number: 'E310', name: 'Ebony Light Effects', hex: '#1A1A1A', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
+            { id: 'E317', number: 'E317', name: 'Titanium Light Effects', hex: '#545454', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E321', number: 'E321', name: 'Red Ruby Light Effects', hex: '#D61C38', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
+            { id: 'E415', number: 'E415', name: 'Pewter Light Effects', hex: '#999999', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E436', number: 'E436', name: 'Golden Brown Light Effects', hex: '#C48A47', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 1, threshold: 1 },
+            { id: 'E677', number: 'E677', name: 'White Gold Light Effects', hex: '#E6D79C', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
+            { id: 'E705', number: 'E705', name: 'Green Light Effects', hex: '#2E8B57', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E815', number: 'E815', name: 'Garnet Light Effects', hex: '#800000', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
+            { id: 'E825', number: 'E825', name: 'Blue Light Effects', hex: '#1E3A8A', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E898', number: 'E898', name: 'Dark Oak Light Effects', hex: '#3B2F2F', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E940', number: 'E940', name: 'Glow-in-the-Dark Light Effects', hex: '#E0FFB3', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 1, threshold: 1 },
+            { id: 'E3821', number: 'E3821', name: 'Light Gold Light Effects', hex: '#D4AF37', category: 'Specialty & Metallics', isLightEffects: true, active: 0, backstock: 0, threshold: 1 },
+            { id: 'E3852', number: 'E3852', name: 'Dark Gold Light Effects', hex: '#AA771C', category: 'Specialty & Metallics', isLightEffects: true, active: 1, backstock: 0, threshold: 1 },
+            { id: 'E5200', number: 'E5200', name: 'Pearlescent White Light Effects', hex: '#F8F9FA', category: 'Specialty & Metallics', isLightEffects: true, active: 2, backstock: 1, threshold: 1 }
+        ];
+
+        let inventory = [];
+        let pendingSharedData = [];
+        let activeTab = 'inventory';
+        let viewMode = 'grid';
+        let checkedShoppingItems = new Set();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadInventory();
+            checkSharedURL();
+            renderStats();
+            renderInventory();
+            lucide.createIcons();
+        });
+
+        // Numeric DMC sorting helper
+        function sortDMCNumbers(a, b) {
+            const numA = a.number.toUpperCase();
+            const numB = b.number.toUpperCase();
+
+            const priority = { 'B5200': 1, 'BLANC': 2, 'ECRU': 3 };
+            if (priority[numA] && priority[numB]) return priority[numA] - priority[numB];
+            if (priority[numA]) return -1;
+            if (priority[numB]) return 1;
+
+            const cleanA = numA.replace(/[^0-9]/g, '');
+            const cleanB = numB.replace(/[^0-9]/g, '');
+
+            const valA = cleanA ? parseInt(cleanA, 10) : 999999;
+            const valB = cleanB ? parseInt(cleanB, 10) : 999999;
+
+            if (valA !== valB) return valA - valB;
+            return numA.localeCompare(numB);
+        }
+
+        function loadInventory() {
+            const saved = localStorage.getItem('dmc_inventory_data');
+            if (saved) {
+                try {
+                    inventory = JSON.parse(saved);
+                } catch (e) {
+                    inventory = [...DEFAULT_DMC_DATA];
+                }
+            } else {
+                inventory = [...DEFAULT_DMC_DATA];
+                saveInventory();
+            }
+            inventory.sort(sortDMCNumbers);
+        }
+
+        function saveInventory() {
+            inventory.sort(sortDMCNumbers);
+            localStorage.setItem('dmc_inventory_data', JSON.stringify(inventory));
+            renderStats();
+            renderShoppingList();
+        }
+
+        function openShareModal() {
+            // Encode ONLY non-zero stock items into compact [number, active, backstock] arrays
+            const nonZero = inventory
+                .filter(item => item.active > 0 || item.backstock > 0)
+                .map(item => [item.number, item.active, item.backstock]);
+
+            const jsonString = JSON.stringify(nonZero);
+            const encoded = btoa(encodeURIComponent(jsonString));
+            
+            const shareUrl = `${window.location.origin}${window.location.pathname}#share=${encoded}`;
+            document.getElementById('shareUrlInput').value = shareUrl;
+            
+            openModal('shareLinkModal');
+        }
+
+        function copyGeneratedShareLink() {
+            const input = document.getElementById('shareUrlInput');
+            input.select();
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(input.value);
+            } else {
+                document.execCommand('copy');
+            }
+
+            const btn = document.getElementById('btnCopyShareLink');
+            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Copied to Clipboard!`;
+            btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+            btn.classList.replace('hover:bg-indigo-700', 'hover:bg-emerald-700');
+            lucide.createIcons();
+
+            setTimeout(() => {
+                btn.innerHTML = `<i data-lucide="copy" class="w-4 h-4"></i> Copy Link to Clipboard`;
+                btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
+                btn.classList.replace('hover:bg-emerald-700', 'hover:bg-indigo-700');
+                lucide.createIcons();
+            }, 2500);
+        }
+
+        function checkSharedURL() {
+            const hash = window.location.hash;
+            if (!hash || (!hash.includes('#share=') && !hash.includes('#data='))) return;
+
+            try {
+                const rawPayload = hash.replace('#share=', '').replace('#data=', '');
+                const jsonStr = decodeURIComponent(atob(rawPayload));
+                const parsed = JSON.parse(jsonStr);
+
+                if (Array.isArray(parsed)) {
+                    pendingSharedData = parsed.map(tuple => ({
+                        number: String(tuple[0]),
+                        active: parseInt(tuple[1]) || 0,
+                        backstock: parseInt(tuple[2]) || 0
+                    }));
+
+                    document.getElementById('sharedItemCount').textContent = pendingSharedData.length;
+                    openModal('sharedModal');
+                }
+            } catch (e) {
+                console.error("Failed to decode shared inventory link", e);
+            }
+        }
+
+        function applySharedData(mode) {
+            if (!pendingSharedData || pendingSharedData.length === 0) return;
+
+            if (mode === 'replace') {
+                inventory.forEach(item => {
+                    item.active = 0;
+                    item.backstock = 0;
+                });
+            }
+
+            pendingSharedData.forEach(shared => {
+                const existing = inventory.find(i => i.number.toLowerCase() === shared.number.toLowerCase());
+                if (existing) {
+                    if (mode === 'merge') {
+                        existing.active = Math.max(existing.active, shared.active);
+                        existing.backstock = Math.max(existing.backstock, shared.backstock);
+                    } else {
+                        existing.active = shared.active;
+                        existing.backstock = shared.backstock;
+                    }
+                }
+            });
+
+            // Clear URL Hash
+            history.replaceState(null, "", window.location.pathname);
+            saveInventory();
+            renderInventory();
+            closeModal('sharedModal');
+            alert("Shared inventory successfully applied!");
+        }
+
+        function handleReset(type) {
+            if (type === 'zero') {
+                inventory.forEach(item => {
+                    item.active = 0;
+                    item.backstock = 0;
+                });
+            } else if (type === 'default') {
+                inventory = [...DEFAULT_DMC_DATA];
+            }
+
+            saveInventory();
+            renderInventory();
+            closeModal('resetModal');
+        }
+
+        function renderStats() {
+            const totalColors = inventory.length;
+            const activeSkeins = inventory.reduce((acc, curr) => acc + (parseInt(curr.active) || 0), 0);
+            const backstockSkeins = inventory.reduce((acc, curr) => acc + (parseInt(curr.backstock) || 0), 0);
+            const restockCount = inventory.filter(item => item.active <= item.threshold && item.backstock === 0).length;
+
+            document.getElementById('stat-total-colors').textContent = totalColors;
+            document.getElementById('stat-active-skeins').textContent = activeSkeins;
+            document.getElementById('stat-backstock-skeins').textContent = backstockSkeins;
+            document.getElementById('stat-need-restock').textContent = restockCount;
+            document.getElementById('shopping-count').textContent = restockCount;
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            const invBtn = document.getElementById('tab-inventory');
+            const shopBtn = document.getElementById('tab-shopping');
+            const invContainer = document.getElementById('inventory-container');
+            const shopContainer = document.getElementById('shopping-container');
+            const filters = document.getElementById('inventory-filters');
+            const viewToggle = document.getElementById('view-mode-toggle');
+
+            if (tab === 'inventory') {
+                invBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm";
+                shopBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
+                invContainer.classList.remove('hidden');
+                shopContainer.classList.add('hidden');
+                filters.classList.remove('hidden');
+                viewToggle.classList.remove('hidden');
+            } else {
+                shopBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm";
+                invBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
+                shopContainer.classList.remove('hidden');
+                invContainer.classList.add('hidden');
+                filters.classList.add('hidden');
+                viewToggle.classList.add('hidden');
+                renderShoppingList();
+            }
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('btn-grid').className = mode === 'grid' ? "p-1.5 text-slate-600 rounded-md bg-slate-100" : "p-1.5 text-slate-600 hover:bg-slate-100 rounded-md";
+            document.getElementById('btn-table').className = mode === 'table' ? "p-1.5 text-slate-600 rounded-md bg-slate-100" : "p-1.5 text-slate-600 hover:bg-slate-100 rounded-md";
+            renderInventory();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = 'ALL';
+            document.getElementById('statusFilter').value = 'ALL';
+            renderInventory();
+        }
+
+        function getFilteredInventory() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            return inventory.filter(item => {
+                const matchesSearch = item.number.toLowerCase().includes(query) || item.name.toLowerCase().includes(query);
+                
+                let matchesCategory = true;
+                if (category === 'LIGHT_EFFECTS') {
+                    matchesCategory = item.isLightEffects === true;
+                } else if (category !== 'ALL') {
+                    matchesCategory = item.category === category;
+                }
+
+                let matchesStatus = true;
+                if (status === 'IN_STOCK') matchesStatus = item.active > 0;
+                else if (status === 'LOW_STOCK') matchesStatus = item.active <= item.threshold && item.active > 0;
+                else if (status === 'OUT_OF_STOCK') matchesStatus = item.active === 0;
+                else if (status === 'HAS_BACKSTOCK') matchesStatus = item.backstock > 0;
+
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+        }
+
+        function renderInventory() {
+            const filtered = getFilteredInventory();
+            const container = document.getElementById('inventory-display');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
+                        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-3">
+                            <i data-lucide="search-x" class="w-6 h-6"></i>
+                        </div>
+                        <p class="font-semibold text-slate-700">No DMC floss colors match your criteria</p>
+                        <p class="text-xs text-slate-400 mt-1">Try resetting filters or adding a new color.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            if (viewMode === 'grid') {
+                let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">';
+                filtered.forEach(item => {
+                    const isLow = item.active <= item.threshold && item.active > 0;
+                    const isOut = item.active === 0;
+
+                    html += `
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-lg shadow-inner border border-black/10 flex-shrink-0" style="background-color: ${item.hex}"></div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-slate-900 text-base">#${item.number}</span>
+                                            ${isOut ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 rounded-full">Out of Stock</span>' : 
+                                              isLow ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full">Low Stock</span>' : ''}
+                                        </div>
+                                        <p class="text-xs text-slate-600 truncate font-medium">${item.name}</p>
+                                        <p class="text-[10px] text-slate-400 truncate">${item.category}</p>
+                                    </div>
+                                </div>
+                                ${item.isLightEffects ? `
+                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[10px] font-bold">
+                                        ✨ Light Effects
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
+                                    <span class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Active</span>
+                                    <div class="flex items-center justify-between gap-1">
+                                        <button onclick="updateQty('${item.id}', 'active', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">-</button>
+                                        <span class="font-bold text-sm text-slate-800">${item.active}</span>
+                                        <button onclick="updateQty('${item.id}', 'active', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
+                                    <span class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Backstock</span>
+                                    <div class="flex items-center justify-between gap-1">
+                                        <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">-</button>
+                                        <span class="font-bold text-sm text-slate-800">${item.backstock}</span>
+                                        <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center text-xs text-slate-400 pt-1">
+                                <span>Min Threshold: ${item.threshold}</span>
+                                <button onclick="deleteColor('${item.id}')" class="text-slate-300 hover:text-rose-500 transition-colors" title="Delete Color">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                let html = `
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium text-xs uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-3">Color</th>
+                                    <th class="p-3">Number</th>
+                                    <th class="p-3">Name</th>
+                                    <th class="p-3">Category</th>
+                                    <th class="p-3 text-center">Active</th>
+                                    <th class="p-3 text-center">Backstock</th>
+                                    <th class="p-3 text-center">Threshold</th>
+                                    <th class="p-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                `;
+
+                filtered.forEach(item => {
+                    html += `
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="p-3">
+                                <div class="w-7 h-7 rounded shadow-inner border border-black/10" style="background-color: ${item.hex}"></div>
+                            </td>
+                            <td class="p-3 font-bold text-slate-900">#${item.number}</td>
+                            <td class="p-3 font-medium text-slate-700">${item.name}</td>
+                            <td class="p-3 text-xs">
+                                ${item.isLightEffects ? 
+                                    '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-bold">✨ Light Effects</span>' : 
+                                    `<span class="text-slate-500">${item.category}</span>`}
+                            </td>
+                            <td class="p-3">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="updateQty('${item.id}', 'active', -1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">-</button>
+                                    <span class="font-semibold text-slate-800 w-4 text-center">${item.active}</span>
+                                    <button onclick="updateQty('${item.id}', 'active', 1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">+</button>
+                                </div>
+                            </td>
+                            <td class="p-3">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">-</button>
+                                    <span class="font-semibold text-slate-800 w-4 text-center">${item.backstock}</span>
+                                    <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">+</button>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center text-xs text-slate-500">${item.threshold}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="deleteColor('${item.id}')" class="text-slate-400 hover:text-rose-600 transition-colors p-1">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.innerHTML = html;
+            }
+
+            lucide.createIcons();
+        }
+
+        function updateQty(id, field, delta) {
+            const item = inventory.find(i => i.id === id);
+            if (!item) return;
+
+            if (field === 'active') {
+                item.active = Math.max(0, item.active + delta);
+            } else if (field === 'backstock') {
+                item.backstock = Math.max(0, item.backstock + delta);
+            }
+
+            saveInventory();
+            renderInventory();
+        }
+
+        function deleteColor(id) {
+            if (confirm("Are you sure you want to remove this DMC color from your tracker?")) {
+                inventory = inventory.filter(i => i.id !== id);
+                saveInventory();
+                renderInventory();
+            }
+        }
+
+        function handleAddFloss(event) {
+            event.preventDefault();
+            const number = document.getElementById('addNumber').value.trim();
+            const name = document.getElementById('addName').value.trim();
+            const category = document.getElementById('addCategory').value;
+            const hex = document.getElementById('addHex').value.trim();
+            const isLightEffects = document.getElementById('addIsLightEffects').checked;
+            const active = parseInt(document.getElementById('addActive').value) || 0;
+            const backstock = parseInt(document.getElementById('addBackstock').value) || 0;
+            const threshold = parseInt(document.getElementById('addThreshold').value) || 1;
+
+            if (!number || !name) return;
+
+            const existing = inventory.find(i => i.number.toLowerCase() === number.toLowerCase());
+            if (existing) {
+                alert(`DMC #${number} already exists in your inventory!`);
+                return;
+            }
+
+            const newItem = {
+                id: Date.now().toString(),
+                number,
+                name,
+                category,
+                hex,
+                isLightEffects,
+                active,
+                backstock,
+                threshold
+            };
+
+            inventory.push(newItem);
+            saveInventory();
+            renderInventory();
+            closeModal('addModal');
+            document.getElementById('addFlossForm').reset();
+        }
+
+        function renderShoppingList() {
+            const container = document.getElementById('shopping-list-display');
+            const needed = inventory.filter(item => item.active <= item.threshold && item.backstock === 0);
+
+            if (needed.length === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center">
+                        <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-3">
+                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                        </div>
+                        <p class="font-semibold text-slate-800">Your thread stock is fully supplied!</p>
+                        <p class="text-xs text-slate-400 mt-1">No items are currently below low-stock threshold with empty backstock.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '<div class="divide-y divide-slate-100">';
+            needed.forEach(item => {
+                const isChecked = checkedShoppingItems.has(item.id);
+                html += `
+                    <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors ${isChecked ? 'bg-slate-50/80 opacity-60' : ''}">
+                        <div class="flex items-center gap-3">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingCheck('${item.id}')" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300">
+                            <div class="w-6 h-6 rounded border border-black/10 shadow-inner" style="background-color: ${item.hex}"></div>
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <p class="font-bold text-sm text-slate-900 ${isChecked ? 'line-through' : ''}">#${item.number} - ${item.name}</p>
+                                    ${item.isLightEffects ? '<span class="px-1.5 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold">✨ Light Effects</span>' : ''}
+                                </div>
+                                <p class="text-xs text-slate-400">${item.category}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-rose-50 text-rose-600">
+                                ${item.active === 0 ? 'Out of Stock' : `Low (${item.active} left)`}
+                            </span>
+                            <button onclick="restockItem('${item.id}')" title="Mark Restocked (+1 Active)" class="text-xs font-semibold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Restock
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function toggleShoppingCheck(id) {
+            if (checkedShoppingItems.has(id)) {
+                checkedShoppingItems.delete(id);
+            } else {
+                checkedShoppingItems.add(id);
+            }
+            renderShoppingList();
+        }
+
+        function restockItem(id) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                item.active += 1;
+                saveInventory();
+                renderShoppingList();
+            }
+        }
+
+        function copyShoppingList() {
+            const needed = inventory.filter(item => item.active <= item.threshold && item.backstock === 0);
+            if (needed.length === 0) return;
+
+            const text = "DMC Floss Restock List:\n" + needed.map(i => `- DMC #${i.number} (${i.name})${i.isLightEffects ? ' [✨ Light Effects]' : ''}`).join('\n');
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            
+            alert("Shopping list copied to clipboard!");
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `DMC_Floss_Inventory_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        inventory = imported;
+                        saveInventory();
+                        renderInventory();
+                        alert("Inventory successfully imported!");
+                    } else {
+                        alert("Invalid file format. Expected a JSON array of colors.");
+                    }
+                } catch (err) {
+                    alert("Error parsing JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
