@@ -32,17 +32,7 @@
       </div>
 
       <!-- Header Action Buttons -->
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="flex items-center bg-indigo-800/80 px-2.5 py-1.5 rounded-lg border border-indigo-500/30 text-xs">
-          <span class="text-indigo-200 font-medium mr-2">Min Restock Qty:</span>
-          <select id="minThresholdSelect" onchange="changeMinThreshold(this.value)" class="bg-indigo-900 text-white font-bold rounded px-2 py-0.5 border border-indigo-400 focus:outline-none">
-            <option value="0">0 (Only empty)</option>
-            <option value="1">1 skein</option>
-            <option value="2">2 skeins</option>
-            <option value="3">3 skeins</option>
-          </select>
-        </div>
-
+      <div class="flex items-center space-x-2">
         <button onclick="openShareModal()" class="flex items-center space-x-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-2 rounded-md font-medium transition shadow-sm" title="Generate Shareable Link">
           <i data-lucide="share-2" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Share Link</span>
@@ -137,8 +127,7 @@
               <option value="ALL">All Stock Statuses</option>
               <option value="ACTIVE">In Main Storage (>0)</option>
               <option value="BACKSTOCK">Has Extra Backstock (>0)</option>
-              <option value="LOW">Low Stock (≤ threshold)</option>
-              <option value="MANUAL">Pinned to Shopping List 🛒</option>
+              <option value="LOW">Low Stock (≤1 Total)</option>
               <option value="EMPTY">Out of Stock (0 Total)</option>
             </select>
           </div>
@@ -157,7 +146,7 @@
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 class="font-bold text-slate-800 text-lg">Threads to Buy</h2>
-          <p class="text-xs text-slate-500">Includes items below your restock threshold or manually added to your shopping list.</p>
+          <p class="text-xs text-slate-500">Includes all items with 0 main storage and 0 backstock skeins.</p>
         </div>
         <div class="flex items-center space-x-2">
           <button onclick="copyShoppingList()" class="bg-slate-800 hover:bg-slate-900 text-white text-xs px-3 py-2 rounded-md font-medium transition flex items-center space-x-1">
@@ -176,7 +165,7 @@
         <div id="shoppingEmpty" class="hidden text-center py-12">
           <i data-lucide="check-circle" class="w-12 h-12 text-emerald-500 mx-auto mb-2"></i>
           <p class="text-slate-700 font-bold text-lg">Your Restock List is Clear!</p>
-          <p class="text-slate-500 text-sm">All catalog threads meet your minimum stock threshold and no items are manually pinned.</p>
+          <p class="text-slate-500 text-sm">All catalog threads have sufficient main storage or backstock skeins.</p>
         </div>
       </div>
     </section>
@@ -193,7 +182,7 @@
         <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <p class="text-xs text-slate-600 leading-relaxed">
-        This link compresses your non-zero thread quantities and shopping list items into a compact web URL. Anyone opening it can load or merge your numbers into their app without affecting your copy!
+        This link compresses your non-zero thread quantities into a compact web URL. Anyone opening it can choose to load or merge your numbers into their own app without affecting your copy!
       </p>
       <div class="space-y-2">
         <label class="text-xs font-semibold text-slate-700">Shareable URL</label>
@@ -259,7 +248,7 @@
       <div class="space-y-3">
         <button onclick="executeReset('zero')" class="w-full p-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg text-left transition">
           <div class="text-xs font-bold text-amber-900">Zero Out Quantities</div>
-          <div class="text-xs text-amber-700">Sets all main storage, backstock, and shopping list pins to 0 while keeping custom colors.</div>
+          <div class="text-xs text-amber-700">Sets all main storage & backstock counts to 0 while keeping custom colors.</div>
         </button>
         <button onclick="executeReset('factory')" class="w-full p-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg text-left transition">
           <div class="text-xs font-bold text-rose-900">Reset to Default Catalog</div>
@@ -819,8 +808,7 @@
 
     // STATE MANAGEMENT
     let catalog = [];
-    let inventory = {}; // { "310": { active: 2, backstock: 1, pinned: false } }
-    let minThreshold = 0; // Default minimum threshold set to 0
+    let inventory = {}; // { "310": { active: 2, backstock: 1 } }
     let pendingSharedData = null;
 
     function initApp() {
@@ -838,14 +826,10 @@
       const savedInv = localStorage.getItem('dmc_inventory');
       inventory = savedInv ? JSON.parse(savedInv) : {};
 
-      const savedThresh = localStorage.getItem('dmc_min_threshold');
-      minThreshold = savedThresh !== null ? parseInt(savedThresh, 10) : 0;
-      document.getElementById('minThresholdSelect').value = minThreshold;
-
-      // Initialize missing stock entries
+      // Initialize empty stock for new codes
       catalog.forEach(item => {
         if (!inventory[item.code]) {
-          inventory[item.code] = { active: 0, backstock: 0, pinned: false };
+          inventory[item.code] = { active: 0, backstock: 0 };
         }
       });
     }
@@ -853,31 +837,15 @@
     function saveStorage() {
       localStorage.setItem('dmc_custom_catalog', JSON.stringify(catalog));
       localStorage.setItem('dmc_inventory', JSON.stringify(inventory));
-      localStorage.setItem('dmc_min_threshold', minThreshold);
       updateStats();
-    }
-
-    function changeMinThreshold(val) {
-      minThreshold = parseInt(val, 10);
-      saveStorage();
-      renderCatalog();
-      showToast(`Restock threshold set to ${minThreshold} skein(s)`);
     }
 
     // UPDATE QUANTITIES
     function updateQty(code, field, delta) {
-      if (!inventory[code]) inventory[code] = { active: 0, backstock: 0, pinned: false };
+      if (!inventory[code]) inventory[code] = { active: 0, backstock: 0 };
       inventory[code][field] = Math.max(0, (inventory[code][field] || 0) + delta);
       saveStorage();
       renderCatalog();
-    }
-
-    function toggleShoppingPin(code) {
-      if (!inventory[code]) inventory[code] = { active: 0, backstock: 0, pinned: false };
-      inventory[code].pinned = !inventory[code].pinned;
-      saveStorage();
-      renderCatalog();
-      showToast(inventory[code].pinned ? `Added #${code} to shopping list` : `Removed #${code} from shopping list`);
     }
 
     // DASHBOARD STATS
@@ -889,12 +857,12 @@
       let shoppingCount = 0;
 
       catalog.forEach(item => {
-        const inv = inventory[item.code] || { active: 0, backstock: 0, pinned: false };
+        const inv = inventory[item.code] || { active: 0, backstock: 0 };
         const sum = inv.active + inv.backstock;
         if (inv.active > 0) activeCount++;
         if (inv.backstock > 0) backstockCount++;
-        if (sum <= minThreshold) lowCount++;
-        if (sum <= minThreshold || inv.pinned) shoppingCount++;
+        if (sum === 1) lowCount++;
+        if (sum === 0) shoppingCount++;
       });
 
       document.getElementById('statTotal').innerText = total;
@@ -916,7 +884,7 @@
       let visibleCount = 0;
 
       catalog.forEach(item => {
-        const inv = inventory[item.code] || { active: 0, backstock: 0, pinned: false };
+        const inv = inventory[item.code] || { active: 0, backstock: 0 };
         const total = inv.active + inv.backstock;
 
         // Search Filter
@@ -931,8 +899,7 @@
         let matchesStatus = true;
         if (statusFilter === 'ACTIVE') matchesStatus = inv.active > 0;
         else if (statusFilter === 'BACKSTOCK') matchesStatus = inv.backstock > 0;
-        else if (statusFilter === 'LOW') matchesStatus = total <= minThreshold;
-        else if (statusFilter === 'MANUAL') matchesStatus = !!inv.pinned;
+        else if (statusFilter === 'LOW') matchesStatus = total === 1;
         else if (statusFilter === 'EMPTY') matchesStatus = total === 0;
 
         if (matchesSearch && matchesCat && matchesStatus) {
@@ -952,11 +919,6 @@
                   <div class="text-xs text-slate-600 font-medium line-clamp-1">${item.name}</div>
                 </div>
               </div>
-
-              <!-- Shopping Cart Pin Toggle -->
-              <button onclick="toggleShoppingPin('${item.code}')" class="p-1.5 rounded-lg border transition ${inv.pinned ? 'bg-rose-500 text-white border-rose-600 shadow-sm' : 'bg-slate-100 hover:bg-slate-200 text-slate-500 border-slate-200'}" title="${inv.pinned ? 'Remove from Shopping List' : 'Add to Shopping List'}">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-              </button>
             </div>
 
             <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-center">
@@ -994,17 +956,13 @@
       container.innerHTML = '';
 
       const needed = catalog.filter(item => {
-        const inv = inventory[item.code] || { active: 0, backstock: 0, pinned: false };
-        const total = inv.active + inv.backstock;
-        return total <= minThreshold || inv.pinned;
+        const inv = inventory[item.code] || { active: 0, backstock: 0 };
+        return (inv.active + inv.backstock) === 0;
       });
 
       document.getElementById('shoppingEmpty').classList.toggle('hidden', needed.length > 0);
 
       needed.forEach(item => {
-        const inv = inventory[item.code] || { active: 0, backstock: 0, pinned: false };
-        const total = inv.active + inv.backstock;
-        
         const row = document.createElement('div');
         row.className = "py-3 flex items-center justify-between hover:bg-slate-50 px-2 rounded-lg transition";
         row.innerHTML = `
@@ -1014,19 +972,12 @@
               <span class="font-bold text-slate-900 text-sm">DMC #${item.code}</span>
               <span class="text-xs text-slate-500 ml-2">${item.name}</span>
               ${item.isLightEffects ? `<span class="ml-2 text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full">✨ Light Effects</span>` : ''}
-              ${inv.pinned ? `<span class="ml-2 text-[10px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded-full">📌 Manual Add</span>` : ''}
             </div>
           </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-xs text-slate-400 font-medium hidden sm:inline">Stock: ${total}</span>
-            <button onclick="updateQty('${item.code}', 'active', 1)" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold px-3 py-1 rounded-md transition flex items-center space-x-1">
-              <i data-lucide="plus" class="w-3 h-3"></i>
-              <span>Restocked</span>
-            </button>
-            <button onclick="toggleShoppingPin('${item.code}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded-md transition" title="Unpin from list">
-              <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-          </div>
+          <button onclick="updateQty('${item.code}', 'active', 1)" class="text-xs bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold px-3 py-1 rounded-md transition flex items-center space-x-1">
+            <i data-lucide="plus" class="w-3 h-3"></i>
+            <span>Restocked</span>
+          </button>
         `;
         container.appendChild(row);
       });
@@ -1038,8 +989,8 @@
       const activeItems = [];
       Object.keys(inventory).forEach(code => {
         const inv = inventory[code];
-        if (inv.active > 0 || inv.backstock > 0 || inv.pinned) {
-          activeItems.push([code, inv.active, inv.backstock, inv.pinned ? 1 : 0]);
+        if (inv.active > 0 || inv.backstock > 0) {
+          activeItems.push([code, inv.active, inv.backstock]);
         }
       });
 
@@ -1084,20 +1035,18 @@
 
       if (mode === 'replace') {
         Object.keys(inventory).forEach(code => {
-          inventory[code] = { active: 0, backstock: 0, pinned: false };
+          inventory[code] = { active: 0, backstock: 0 };
         });
       }
 
-      pendingSharedData.forEach(([code, act, back, pin]) => {
-        if (!inventory[code]) inventory[code] = { active: 0, backstock: 0, pinned: false };
+      pendingSharedData.forEach(([code, act, back]) => {
+        if (!inventory[code]) inventory[code] = { active: 0, backstock: 0 };
         if (mode === 'replace') {
           inventory[code].active = act;
           inventory[code].backstock = back;
-          inventory[code].pinned = !!pin;
         } else {
           inventory[code].active += act;
           inventory[code].backstock += back;
-          if (pin) inventory[code].pinned = true;
         }
       });
 
@@ -1125,13 +1074,13 @@
     function executeReset(type) {
       if (type === 'zero') {
         Object.keys(inventory).forEach(code => {
-          inventory[code] = { active: 0, backstock: 0, pinned: false };
+          inventory[code] = { active: 0, backstock: 0 };
         });
-        showToast("All quantities & shopping list pins zeroed out!");
+        showToast("All quantities zeroed out!");
       } else if (type === 'factory') {
         catalog = sortDmcCatalog([...DEFAULT_DMC_CATALOG]);
         inventory = {};
-        catalog.forEach(item => { inventory[item.code] = { active: 0, backstock: 0, pinned: false }; });
+        catalog.forEach(item => { inventory[item.code] = { active: 0, backstock: 0 }; });
         localStorage.removeItem('dmc_custom_catalog');
         showToast("Reset to default DMC catalog!");
       }
@@ -1169,7 +1118,7 @@
       }
 
       catalog = sortDmcCatalog(catalog);
-      if (!inventory[code]) inventory[code] = { active: 0, backstock: 0, pinned: false };
+      if (!inventory[code]) inventory[code] = { active: 0, backstock: 0 };
 
       saveStorage();
       closeCustomColorModal();
@@ -1179,7 +1128,7 @@
 
     // IMPORT / EXPORT JSON
     function exportJSON() {
-      const data = { catalog, inventory, minThreshold };
+      const data = { catalog, inventory };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1201,10 +1150,6 @@
           if (data.catalog && data.inventory) {
             catalog = sortDmcCatalog(data.catalog);
             inventory = data.inventory;
-            if (data.minThreshold !== undefined) {
-              minThreshold = data.minThreshold;
-              document.getElementById('minThresholdSelect').value = minThreshold;
-            }
             saveStorage();
             renderCatalog();
             showToast("Database restored successfully!");
@@ -1238,9 +1183,8 @@
     // COPY SHOPPING LIST
     function copyShoppingList() {
       const needed = catalog.filter(item => {
-        const inv = inventory[item.code] || { active: 0, backstock: 0, pinned: false };
-        const total = inv.active + inv.backstock;
-        return total <= minThreshold || inv.pinned;
+        const inv = inventory[item.code] || { active: 0, backstock: 0 };
+        return (inv.active + inv.backstock) === 0;
       });
 
       if (needed.length === 0) {
@@ -1250,8 +1194,7 @@
 
       let text = "DMC Floss Restock List:\n";
       needed.forEach(item => {
-        const inv = inventory[item.code] || { pinned: false };
-        text += `- DMC #${item.code}: ${item.name}${item.isLightEffects ? ' (Light Effects)' : ''}${inv.pinned ? ' (Manual Add)' : ''}\n`;
+        text += `- DMC #${item.code}: ${item.name}${item.isLightEffects ? ' (Light Effects)' : ''}\n`;
       });
 
       navigator.clipboard.writeText(text);
