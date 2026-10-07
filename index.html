@@ -85,7 +85,7 @@
                         <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
                     </label>
 
-                    <button onclick="openModal('resetModal')" title="Reset Data / Clear Inventory" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                    <button onclick="forceFullReset()" title="Force Hard Reset Database" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
                         <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -264,21 +264,7 @@
             <div class="space-y-4 text-xs text-slate-600 leading-relaxed">
                 <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1">
                     <p class="font-bold text-slate-800">🔒 Data Privacy Guarantee</p>
-                    <p>Each device or web browser maintains its own **private local database**. Sharing this app with a friend will **never** alter your own data unless you manually import a shared link or file.</p>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-slate-800 text-sm mb-1">Option 1: Google Drive</h4>
-                    <ol class="list-decimal pl-4 space-y-1">
-                        <li>Save this webpage file on your computer.</li>
-                        <li>Upload it to your <strong>Google Drive</strong> folder.</li>
-                        <li>Download it to any device and double-click to open in Safari, Chrome, or Edge.</li>
-                    </ol>
-                </div>
-
-                <div>
-                    <h4 class="font-bold text-slate-800 text-sm mb-1">Option 2: Free Live Website Hosting</h4>
-                    <p class="mb-1">Upload this single file to <strong>Netlify Drop</strong> or <strong>GitHub Pages</strong> for a free hosted link.</p>
+                    <p>Each device or web browser maintains its own **private local database**.</p>
                 </div>
             </div>
 
@@ -365,33 +351,8 @@
         </div>
     </div>
 
-    <!-- Modal: Reset -->
-    <div id="resetModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-100 space-y-4">
-            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center">
-                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg text-slate-900">Reset Inventory Data</h3>
-                <p class="text-xs text-slate-500 mt-1">Choose an option below to reset your quantities or restore original default settings.</p>
-            </div>
-
-            <div class="space-y-2 pt-1">
-                <button onclick="handleReset('zero')" class="w-full py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-800 font-medium text-xs rounded-xl text-left border border-amber-200 transition-colors">
-                    Zero Out All Quantities (Keep Custom Colors)
-                </button>
-                <button onclick="handleReset('default')" class="w-full py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-800 font-medium text-xs rounded-xl text-left border border-rose-200 transition-colors">
-                    Reset Entire Catalog to Default Starter Seed
-                </button>
-                <button onclick="closeModal('resetModal')" class="w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium text-xs rounded-xl transition-colors">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // FULL RECONCILED DMC CATALOG (489 Standard Colors + 26 Light Effects = 515 Total Entries)
+        // FULL MASTER DMC CATALOG (489 Standard Solid Colors + 26 Light Effects = 515 Total Entries)
         const RAW_SEEDS = [
             ["B5200", "Snow White", "#FFFFFF", "Neutrals & Monochromes", 0],
             ["BLANC", "White", "#FDFBF7", "Neutrals & Monochromes", 0],
@@ -410,7 +371,7 @@
             ["12", "Tender Green", "#cfc662", "Greens", 0],
             ["13", "Medium Light Nile Green", "#98c29c", "Greens", 0],
             ["14", "Pale Apple Green", "#ced194", "Greens", 0],
-            ["15", "Apple Blossom", "#F6CFD7", "Reds & Pinks", 0],
+            ["15", "Apple Green", "#cdd684", "Greens", 0],
             ["16", "Light Chartreuse", "#b0b56a", "Greens", 0],
             ["17", "Light Yellow Plum", "#d5c551", "Oranges & Yellows", 0],
             ["18", "Yellow Plum", "#d9bf4a", "Oranges & Yellows", 0],
@@ -418,43 +379,43 @@
             ["20", "Shrimp", "#f7d1b3", "Reds & Pinks", 0],
             ["21", "Light Alizarin", "#c0614d", "Reds & Pinks", 0],
             ["22", "Alizarin", "#922a29", "Reds & Pinks", 0],
-            ["23", "Apple Blossom Light", "#e8dadf", "Reds & Pinks", 0],
-            ["24", "White Lavender", "#e0d9e4", "Purples", 0],
-            ["25", "Ultra Light Lavender", "#d0cadb", "Purples", 0],
-            ["26", "Pale Lavender", "#bbb0d1", "Purples", 0],
-            ["27", "White Violet", "#d9d4d8", "Purples", 0],
-            ["28", "Medium Light Eggplant", "#8178a0", "Purples", 0],
-            ["29", "Eggplant", "#493c5e", "Purples", 0],
-            ["30", "Medium Light Blueberry", "#8a89b0", "Purples", 0],
-            ["31", "Blueberry", "#65629d", "Purples", 0],
-            ["32", "Dark Blueberry", "#565385", "Purples", 0],
+            ["23", "Apple Blossom", "#e8dadf", "Reds & Pinks", 0],
+            ["24", "White Lavender", "#e0d9e4", "Blues & Violets", 0],
+            ["25", "Ultra Light Lavender", "#d0cadb", "Blues & Violets", 0],
+            ["26", "Pale Lavender", "#bbb0d1", "Blues & Violets", 0],
+            ["27", "White Violet", "#d9d4d8", "Blues & Violets", 0],
+            ["28", "Medium Light Eggplant", "#8178a0", "Blues & Violets", 0],
+            ["29", "Eggplant", "#493c5e", "Blues & Violets", 0],
+            ["30", "Medium Light Blueberry", "#8a89b0", "Blues & Violets", 0],
+            ["31", "Blueberry", "#65629d", "Blues & Violets", 0],
+            ["32", "Dark Blueberry", "#565385", "Blues & Violets", 0],
             ["33", "Fuchsia", "#884b8e", "Reds & Pinks", 0],
             ["34", "Dark Fuchsia", "#7a3070", "Reds & Pinks", 0],
-            ["35", "Fuchsia Very Dark", "#871646", "Reds & Pinks", 0],
+            ["35", "Very Dark Fuchsia", "#58274b", "Reds & Pinks", 0],
             ["150", "Dusty Rose Ultra Very Dark", "#911238", "Reds & Pinks", 0],
             ["151", "Dusty Rose Very Light", "#f2a8ba", "Reds & Pinks", 0],
             ["152", "Shell Pink Medium Light", "#cc8285", "Reds & Pinks", 0],
-            ["153", "Violet Very Light", "#d19ec4", "Purples", 0],
-            ["154", "Grape Very Dark", "#38172b", "Purples", 0],
-            ["155", "Blue Violet Medium Dark", "#7665ab", "Purples", 0],
-            ["156", "Blue Violet Medium Light", "#737db3", "Purples", 0],
-            ["157", "Cornflower Blue Very Light", "#95abca", "Blues", 0],
-            ["158", "Cornflower Blue Medium Dark", "#303065", "Blues", 0],
-            ["159", "Grey Blue Light", "#97a6c5", "Blues", 0],
-            ["160", "Grey Blue Medium", "#66759c", "Blues", 0],
-            ["161", "Grey Blue", "#4f5c85", "Blues", 0],
-            ["162", "Blue Ultra Very Light", "#a2c1d0", "Blues", 0],
+            ["153", "Violet Very Light", "#d19ec4", "Blues & Violets", 0],
+            ["154", "Grape Very Dark", "#38172b", "Blues & Violets", 0],
+            ["155", "Blue Violet Medium Dark", "#7665ab", "Blues & Violets", 0],
+            ["156", "Blue Violet Medium Light", "#737db3", "Blues & Violets", 0],
+            ["157", "Cornflower Blue Very Light", "#95abca", "Blues & Violets", 0],
+            ["158", "Cornflower Blue Medium Dark", "#303065", "Blues & Violets", 0],
+            ["159", "Grey Blue Light", "#97a6c5", "Blues & Violets", 0],
+            ["160", "Grey Blue Medium", "#66759c", "Blues & Violets", 0],
+            ["161", "Grey Blue", "#4f5c85", "Blues & Violets", 0],
+            ["162", "Blue Ultra Very Light", "#a2c1d0", "Blues & Violets", 0],
             ["163", "Celadon Green Medium", "#44715b", "Greens", 0],
             ["164", "Forest Green Light", "#87bf78", "Greens", 0],
             ["165", "Moss Green Very Light", "#cdc965", "Greens", 0],
             ["166", "Moss Green Medium Light", "#a19f20", "Greens", 0],
             ["167", "Yellow Beige Very Dark", "#8d643a", "Browns & Earthy", 0],
-            ["168", "Pewter Very Light", "#abb3b7", "Neutrals & Monochromes", 0],
-            ["169", "Pewter Light", "#707a7a", "Neutrals & Monochromes", 0],
-            ["208", "Lavender Very Dark", "#834080", "Purples", 0],
-            ["209", "Lavender Dark", "#a66cb3", "Purples", 0],
-            ["210", "Lavender Medium", "#be91cd", "Purples", 0],
-            ["211", "Lavender Light", "#d6b5e3", "Purples", 0],
+            ["168", "Pewter Very Light", "#abb3b7", "Greys & Black", 0],
+            ["169", "Pewter Light", "#707a7a", "Greys & Black", 0],
+            ["208", "Lavender Very Dark", "#824596", "Blues & Violets", 0],
+            ["209", "Lavender Dark", "#a66cb3", "Blues & Violets", 0],
+            ["210", "Lavender Medium", "#be91cd", "Blues & Violets", 0],
+            ["211", "Lavender Light", "#d6b5e3", "Blues & Violets", 0],
             ["221", "Shell Pink Very Dark", "#6d2329", "Reds & Pinks", 0],
             ["223", "Shell Pink Light", "#b35c65", "Reds & Pinks", 0],
             ["224", "Shell Pink Very Light", "#d48f8b", "Reds & Pinks", 0],
@@ -464,25 +425,25 @@
             ["304", "Christmas Red Medium", "#9a0029", "Reds & Pinks", 0],
             ["307", "Lemon", "#fbde18", "Oranges & Yellows", 0],
             ["309", "Rose Deep", "#ad203e", "Reds & Pinks", 0],
-            ["310", "Black", "#000000", "Neutrals & Monochromes", 0],
-            ["311", "Navy Blue Medium", "#203050", "Blues", 0],
-            ["312", "Navy Blue Light", "#23426f", "Blues", 0],
+            ["310", "Black", "#0c0c0c", "Greys & Black", 0],
+            ["311", "Navy Blue Medium", "#203050", "Blues & Violets", 0],
+            ["312", "Navy Blue Light", "#23426f", "Blues & Violets", 0],
             ["315", "Antique Mauve Dark", "#6f3842", "Reds & Pinks", 0],
             ["316", "Antique Mauve Medium", "#af6a7f", "Reds & Pinks", 0],
-            ["317", "Pewter Grey", "#4f5460", "Neutrals & Monochromes", 0],
-            ["318", "Steel Grey Light", "#808796", "Neutrals & Monochromes", 0],
-            ["319", "Pistachio Green Very Dark", "#1B4D2E", "Greens", 0],
+            ["317", "Pewter Grey", "#4f5460", "Greys & Black", 0],
+            ["318", "Steel Grey Light", "#808796", "Greys & Black", 0],
+            ["319", "Pistachio Green Very Dark", "#25402c", "Greens", 0],
             ["320", "Pistachio Green Medium", "#5a7f5a", "Greens", 0],
-            ["321", "Red", "#C71585", "Reds & Pinks", 0],
-            ["322", "Baby Blue Dark", "#40669b", "Blues", 0],
+            ["321", "Christmas Red", "#ac0025", "Reds & Pinks", 0],
+            ["322", "Baby Blue Dark", "#40669b", "Blues & Violets", 0],
             ["326", "Rose Very Deep", "#a61238", "Reds & Pinks", 0],
-            ["327", "Violet", "#5e2e5e", "Purples", 0],
-            ["333", "Blue Violet Very Dark", "#4f3687", "Purples", 0],
-            ["334", "Baby Blue Medium", "#4a75a6", "Blues", 0],
+            ["327", "Violet", "#5e2e5e", "Blues & Violets", 0],
+            ["333", "Blue Violet Very Dark", "#4f3687", "Blues & Violets", 0],
+            ["334", "Baby Blue Medium", "#4a75a6", "Blues & Violets", 0],
             ["335", "Rose", "#d44464", "Reds & Pinks", 0],
-            ["336", "Navy Blue", "#202c4f", "Blues", 0],
-            ["340", "Blue Violet Medium", "#7c76be", "Purples", 0],
-            ["341", "Blue Violet Light", "#929ecb", "Purples", 0],
+            ["336", "Navy Blue", "#202c4f", "Blues & Violets", 0],
+            ["340", "Blue Violet Medium", "#7c76be", "Blues & Violets", 0],
+            ["341", "Blue Violet Light", "#929ecb", "Blues & Violets", 0],
             ["347", "Salmon Very Dark", "#a62030", "Reds & Pinks", 0],
             ["349", "Coral Dark", "#bd1c29", "Reds & Pinks", 0],
             ["350", "Coral Medium", "#d43434", "Reds & Pinks", 0],
@@ -500,21 +461,21 @@
             ["400", "Mahogany Dark", "#753321", "Browns & Earthy", 0],
             ["402", "Mahogany Very Light", "#e8895b", "Browns & Earthy", 0],
             ["407", "Clay Brown", "#b17260", "Browns & Earthy", 0],
-            ["413", "Pewter Grey Dark", "#3d4247", "Neutrals & Monochromes", 0],
-            ["414", "Steel Gray Dark", "#8C8C8C", "Neutrals & Monochromes", 0],
-            ["415", "Pearl Grey", "#9fa6b1", "Neutrals & Monochromes", 0],
+            ["413", "Pewter Grey Dark", "#3d4247", "Greys & Black", 0],
+            ["414", "Steel Grey Dark", "#646b78", "Greys & Black", 0],
+            ["415", "Pearl Grey", "#9fa6b1", "Greys & Black", 0],
             ["420", "Hazelnut Brown Dark", "#8e6034", "Browns & Earthy", 0],
             ["422", "Hazelnut Brown Light", "#bc935b", "Browns & Earthy", 0],
             ["433", "Brown Medium", "#643823", "Browns & Earthy", 0],
             ["434", "Brown Light", "#804625", "Browns & Earthy", 0],
             ["435", "Brown Very Light", "#a36134", "Browns & Earthy", 0],
             ["436", "Tan", "#b97c4a", "Browns & Earthy", 0],
-            ["437", "Tan Light", "#E0AD7A", "Browns & Earthy", 0],
+            ["437", "Tan Light", "#d19c6a", "Browns & Earthy", 0],
             ["444", "Lemon Dark", "#f0b900", "Oranges & Yellows", 0],
             ["445", "Lemon Light", "#f7f57a", "Oranges & Yellows", 0],
-            ["451", "Shell Grey Dark", "#7a6c6c", "Neutrals & Monochromes", 0],
-            ["452", "Shell Grey Medium", "#9f8b8b", "Neutrals & Monochromes", 0],
-            ["453", "Shell Grey Light", "#b8a8a8", "Neutrals & Monochromes", 0],
+            ["451", "Shell Grey Dark", "#7a6c6c", "Greys & Black", 0],
+            ["452", "Shell Grey Medium", "#9f8b8b", "Greys & Black", 0],
+            ["453", "Shell Grey Light", "#b8a8a8", "Greys & Black", 0],
             ["469", "Avocado Green", "#575f23", "Greens", 0],
             ["470", "Avocado Green Light", "#6a7830", "Greens", 0],
             ["471", "Avocado Green Very Light", "#8d9d54", "Greens", 0],
@@ -525,26 +486,26 @@
             ["503", "Blue Green Light", "#7ba891", "Greens", 0],
             ["504", "Blue Green Very Light", "#a2d9c4", "Greens", 0],
             ["505", "Jade Green", "#2b6e4e", "Greens", 0],
-            ["517", "Wedgewood Dark", "#285873", "Blues", 0],
-            ["518", "Wedgewood Light", "#4f84a3", "Blues", 0],
-            ["519", "Sky Blue", "#7eaed1", "Blues", 0],
+            ["517", "Wedgewood Dark", "#285873", "Blues & Violets", 0],
+            ["518", "Wedgewood Light", "#4f84a3", "Blues & Violets", 0],
+            ["519", "Sky Blue", "#7eaed1", "Blues & Violets", 0],
             ["520", "Fern Green Dark", "#3f4d38", "Greens", 0],
             ["522", "Fern Green", "#708266", "Greens", 0],
             ["523", "Fern Green Light", "#8db580", "Greens", 0],
             ["524", "Fern Green Very Light", "#a4b59d", "Greens", 0],
-            ["535", "Ash Grey Very Light", "#63645e", "Neutrals & Monochromes", 0],
+            ["535", "Ash Grey Very Light", "#63645e", "Greys & Black", 0],
             ["543", "Beige Brown Ultra Very Light", "#dfd7ce", "Browns & Earthy", 0],
-            ["550", "Violet Very Dark", "#4A0E4E", "Purples", 0],
-            ["552", "Violet Medium", "#733884", "Purples", 0],
-            ["553", "Violet", "#8a4f9e", "Purples", 0],
-            ["554", "Violet Light", "#b88bc9", "Purples", 0],
+            ["550", "Violet Very Dark", "#4c1c5c", "Blues & Violets", 0],
+            ["552", "Violet Medium", "#733884", "Blues & Violets", 0],
+            ["553", "Violet", "#8a4f9e", "Blues & Violets", 0],
+            ["554", "Violet Light", "#b88bc9", "Blues & Violets", 0],
             ["561", "Jade Very Dark", "#194d33", "Greens", 0],
             ["562", "Jade Medium", "#26734d", "Greens", 0],
             ["563", "Jade Light", "#40bf80", "Greens", 0],
             ["564", "Jade Very Light", "#80ffbf", "Greens", 0],
             ["600", "Very Dark Cranberry", "#b01254", "Reds & Pinks", 0],
             ["601", "Dark Cranberry", "#bf2266", "Reds & Pinks", 0],
-            ["602", "Cranberry Medium", "#E22E64", "Reds & Pinks", 0],
+            ["602", "Cranberry Medium", "#d42e64", "Reds & Pinks", 0],
             ["603", "Cranberry", "#f06292", "Reds & Pinks", 0],
             ["604", "Cranberry Light", "#f8bbd0", "Reds & Pinks", 0],
             ["605", "Very Light Cranberry", "#fce4ec", "Reds & Pinks", 0],
@@ -558,21 +519,21 @@
             ["640", "Very Dark Beige Grey", "#696354", "Browns & Earthy", 0],
             ["642", "Dark Beige Grey", "#7d786a", "Browns & Earthy", 0],
             ["644", "Medium Beige Grey", "#a39e91", "Browns & Earthy", 0],
-            ["645", "Very Dark Beaver Grey", "#4e4b46", "Neutrals & Monochromes", 0],
-            ["646", "Dark Beaver Grey", "#635f59", "Neutrals & Monochromes", 0],
-            ["647", "Medium Beaver Grey", "#807b75", "Neutrals & Monochromes", 0],
-            ["648", "Light Beaver Grey", "#9e9a94", "Neutrals & Monochromes", 0],
-            ["666", "Bright Red", "#E31B23", "Reds & Pinks", 0],
+            ["645", "Very Dark Beaver Grey", "#4e4b46", "Greys & Black", 0],
+            ["646", "Dark Beaver Grey", "#635f59", "Greys & Black", 0],
+            ["647", "Medium Beaver Grey", "#807b75", "Greys & Black", 0],
+            ["648", "Light Beaver Grey", "#9e9a94", "Greys & Black", 0],
+            ["666", "Bright Red", "#e60012", "Reds & Pinks", 0],
             ["676", "Light Old Gold", "#e3b778", "Oranges & Yellows", 0],
             ["677", "Very Light Old Gold", "#f3d9a2", "Oranges & Yellows", 0],
             ["680", "Dark Old Gold", "#ba8933", "Oranges & Yellows", 0],
             ["699", "Green", "#006837", "Greens", 0],
-            ["700", "Green Bright", "#00873D", "Greens", 0],
+            ["700", "Bright Green", "#008a3c", "Greens", 0],
             ["701", "Light Green", "#2bb64a", "Greens", 0],
             ["702", "Kelly Green", "#43c455", "Greens", 0],
             ["703", "Chartreuse", "#7bc643", "Greens", 0],
             ["704", "Bright Chartreuse", "#9ee031", "Greens", 0],
-            ["712", "Cream", "#f3ebd3", "Neutrals & Monochromes", 0],
+            ["712", "Cream", "#f3ebd3", "Whites & Neutrals", 0],
             ["718", "Plum", "#9c1a6e", "Reds & Pinks", 0],
             ["720", "Dark Orange Spice", "#c84a1a", "Oranges & Yellows", 0],
             ["721", "Medium Orange Spice", "#e26b38", "Oranges & Yellows", 0],
@@ -591,19 +552,19 @@
             ["739", "Ultra Very Light Tan", "#ebd6b3", "Browns & Earthy", 0],
             ["740", "Tangerine", "#ff6d00", "Oranges & Yellows", 0],
             ["741", "Medium Tangerine", "#ffa000", "Oranges & Yellows", 0],
-            ["742", "Tangerine Light", "#FFAE00", "Oranges & Yellows", 0],
+            ["742", "Light Tangerine", "#ffc107", "Oranges & Yellows", 0],
             ["743", "Yellow Medium", "#ffca28", "Oranges & Yellows", 0],
             ["744", "Yellow Pale", "#ffe082", "Oranges & Yellows", 0],
             ["745", "Yellow Light Pale", "#fff59d", "Oranges & Yellows", 0],
-            ["746", "Off White", "#fcf8e3", "Neutrals & Monochromes", 0],
-            ["747", "Very Light Sky Blue", "#e0f7fa", "Blues", 0],
+            ["746", "Off White", "#fcf8e3", "Whites & Neutrals", 0],
+            ["747", "Very Light Sky Blue", "#e0f7fa", "Blues & Violets", 0],
             ["754", "Light Peach", "#f7cbbe", "Reds & Pinks", 0],
             ["758", "Very Light Terra Cotta", "#e0a18c", "Browns & Earthy", 0],
             ["760", "Salmon", "#e58a8a", "Reds & Pinks", 0],
             ["761", "Light Salmon", "#f4baba", "Reds & Pinks", 0],
-            ["762", "Very Light Pearl Grey", "#e0e0e0", "Neutrals & Monochromes", 0],
+            ["762", "Very Light Pearl Grey", "#e0e0e0", "Greys & Black", 0],
             ["772", "Very Light Yellow Green", "#d7e7c5", "Greens", 0],
-            ["775", "Very Light Baby Blue", "#d0e3f0", "Blues", 0],
+            ["775", "Very Light Baby Blue", "#d0e3f0", "Blues & Violets", 0],
             ["776", "Medium Pink", "#f8bbd0", "Reds & Pinks", 0],
             ["777", "Very Dark Raspberry", "#880e4f", "Reds & Pinks", 0],
             ["778", "Very Light Antique Mauve", "#d1c4e9", "Reds & Pinks", 0],
@@ -612,35 +573,35 @@
             ["781", "Very Dark Topaz", "#8d6e63", "Oranges & Yellows", 0],
             ["782", "Dark Topaz", "#a06b18", "Oranges & Yellows", 0],
             ["783", "Medium Topaz", "#ce8d18", "Oranges & Yellows", 0],
-            ["791", "Very Dark Cornflower Blue", "#2b3263", "Blues", 0],
-            ["792", "Dark Cornflower Blue", "#3b4881", "Blues", 0],
-            ["793", "Medium Cornflower Blue", "#596aa8", "Blues", 0],
-            ["794", "Light Cornflower Blue", "#90caf9", "Blues", 0],
-            ["796", "Royal Blue Dark", "#1034A6", "Blues", 0],
-            ["797", "Royal Blue", "#162a8c", "Blues", 0],
-            ["798", "Dark Delft Blue", "#3f569c", "Blues", 0],
-            ["799", "Medium Delft Blue", "#5c6bc0", "Blues", 0],
-            ["800", "Pale Delft Blue", "#c2d4ec", "Blues", 0],
+            ["791", "Very Dark Cornflower Blue", "#2b3263", "Blues & Violets", 0],
+            ["792", "Dark Cornflower Blue", "#3b4881", "Blues & Violets", 0],
+            ["793", "Medium Cornflower Blue", "#596aa8", "Blues & Violets", 0],
+            ["794", "Light Cornflower Blue", "#90caf9", "Blues & Violets", 0],
+            ["796", "Dark Royal Blue", "#122068", "Blues & Violets", 0],
+            ["797", "Royal Blue", "#162a8c", "Blues & Violets", 0],
+            ["798", "Dark Delft Blue", "#3f569c", "Blues & Violets", 0],
+            ["799", "Medium Delft Blue", "#5c6bc0", "Blues & Violets", 0],
+            ["800", "Pale Delft Blue", "#c2d4ec", "Blues & Violets", 0],
             ["801", "Dark Coffee Brown", "#442813", "Browns & Earthy", 0],
-            ["803", "Ultra Very Dark Baby Blue", "#1c385c", "Blues", 0],
-            ["806", "Dark Peacock Blue", "#00838f", "Blues", 0],
-            ["807", "Peacock Blue", "#3591a6", "Blues", 0],
-            ["809", "Delft Blue", "#6884b8", "Blues", 0],
-            ["813", "Light Blue", "#90caf9", "Blues", 0],
+            ["803", "Ultra Very Dark Baby Blue", "#1c385c", "Blues & Violets", 0],
+            ["806", "Dark Peacock Blue", "#00838f", "Blues & Violets", 0],
+            ["807", "Peacock Blue", "#3591a6", "Blues & Violets", 0],
+            ["809", "Delft Blue", "#6884b8", "Blues & Violets", 0],
+            ["813", "Light Blue", "#90caf9", "Blues & Violets", 0],
             ["814", "Garnet Dark", "#5e0918", "Reds & Pinks", 0],
-            ["815", "Garnet Medium", "#7A0016", "Reds & Pinks", 0],
+            ["815", "Garnet Medium", "#700b1c", "Reds & Pinks", 0],
             ["816", "Garnet", "#8c0d22", "Reds & Pinks", 0],
             ["817", "Very Dark Coral Red", "#b50e29", "Reds & Pinks", 0],
             ["818", "Baby Pink", "#fcdada", "Reds & Pinks", 0],
             ["819", "Light Baby Pink", "#fdeeee", "Reds & Pinks", 0],
-            ["820", "Royal Blue Very Dark", "#0D1B48", "Blues", 0],
-            ["822", "Light Beige Grey", "#e3ded1", "Neutrals & Monochromes", 0],
-            ["823", "Dark Navy Blue", "#101633", "Blues", 0],
-            ["824", "Very Dark Blue", "#203a5e", "Blues", 0],
-            ["825", "Dark Blue", "#2d5485", "Blues", 0],
-            ["826", "Medium Blue", "#4974a5", "Blues", 0],
-            ["827", "Very Light Blue", "#badeee", "Blues", 0],
-            ["828", "Ultra Very Light Sky Blue", "#cbe5ee", "Blues", 0],
+            ["820", "Very Dark Royal Blue", "#0e1342", "Blues & Violets", 0],
+            ["822", "Light Beige Grey", "#e3ded1", "Whites & Neutrals", 0],
+            ["823", "Dark Navy Blue", "#101633", "Blues & Violets", 0],
+            ["824", "Very Dark Blue", "#203a5e", "Blues & Violets", 0],
+            ["825", "Dark Blue", "#2d5485", "Blues & Violets", 0],
+            ["826", "Medium Blue", "#4974a5", "Blues & Violets", 0],
+            ["827", "Very Light Blue", "#badeee", "Blues & Violets", 0],
+            ["828", "Ultra Very Light Sky Blue", "#cbe5ee", "Blues & Violets", 0],
             ["829", "Very Dark Golden Olive", "#4e421a", "Greens", 0],
             ["830", "Dark Golden Olive", "#635523", "Greens", 0],
             ["831", "Medium Golden Olive", "#7a6b30", "Greens", 0],
@@ -648,11 +609,11 @@
             ["833", "Light Golden Olive", "#bda540", "Greens", 0],
             ["834", "Very Light Golden Olive", "#d8be53", "Greens", 0],
             ["838", "Very Dark Beige Brown", "#3b2b1d", "Browns & Earthy", 0],
-            ["839", "Brown Dark", "#433022", "Browns & Earthy", 0],
+            ["839", "Dark Beige Brown", "#4a3828", "Browns & Earthy", 0],
             ["840", "Medium Beige Brown", "#6b5440", "Browns & Earthy", 0],
             ["841", "Light Beige Brown", "#8c725c", "Browns & Earthy", 0],
             ["842", "Very Light Beige Brown", "#b59e8a", "Browns & Earthy", 0],
-            ["844", "Ultra Dark Beaver Grey", "#383634", "Neutrals & Monochromes", 0],
+            ["844", "Ultra Dark Beaver Grey", "#383634", "Greys & Black", 0],
             ["869", "Very Dark Hazelnut Brown", "#6e4b26", "Browns & Earthy", 0],
             ["890", "Ultra Dark Pistachio Green", "#13301a", "Greens", 0],
             ["891", "Dark Carnation", "#d82d56", "Reds & Pinks", 0],
@@ -667,7 +628,7 @@
             ["904", "Very Dark Parrot Green", "#235418", "Greens", 0],
             ["905", "Dark Parrot Green", "#317023", "Greens", 0],
             ["906", "Medium Parrot Green", "#4ba032", "Greens", 0],
-            ["907", "Parrot Green Light", "#87C735", "Greens", 0],
+            ["907", "Light Parrot Green", "#72c43d", "Greens", 0],
             ["909", "Very Dark Emerald Green", "#0d5c2e", "Greens", 0],
             ["910", "Dark Emerald Green", "#12753c", "Greens", 0],
             ["911", "Medium Emerald Green", "#18944d", "Greens", 0],
@@ -684,15 +645,15 @@
             ["926", "Medium Grey Green", "#4e7070", "Greens", 0],
             ["927", "Light Grey Green", "#82a1a1", "Greens", 0],
             ["928", "Very Light Grey Green", "#b1c7c7", "Greens", 0],
-            ["930", "Dark Antique Blue", "#28445e", "Blues", 0],
-            ["931", "Medium Antique Blue", "#426485", "Blues", 0],
-            ["932", "Light Antique Blue", "#7898b8", "Blues", 0],
+            ["930", "Dark Antique Blue", "#28445e", "Blues & Violets", 0],
+            ["931", "Medium Antique Blue", "#426485", "Blues & Violets", 0],
+            ["932", "Light Antique Blue", "#7898b8", "Blues & Violets", 0],
             ["934", "Black Avocado Green", "#212b18", "Greens", 0],
             ["935", "Dark Avocado Green", "#323d26", "Greens", 0],
             ["936", "Very Dark Avocado Green", "#3b4a2b", "Greens", 0],
             ["937", "Medium Avocado Green", "#4a5e33", "Greens", 0],
             ["938", "Ultra Dark Coffee Brown", "#29180b", "Browns & Earthy", 0],
-            ["939", "Very Dark Navy Blue", "#0a0f24", "Blues", 0],
+            ["939", "Very Dark Navy Blue", "#0a0f24", "Blues & Violets", 0],
             ["943", "Medium Aquamarine", "#1ba893", "Greens", 0],
             ["945", "Tawny", "#f7ccb0", "Browns & Earthy", 0],
             ["946", "Medium Burnt Orange", "#e65100", "Oranges & Yellows", 0],
@@ -714,7 +675,7 @@
             ["967", "Very Light Apricot", "#ffe0b2", "Oranges & Yellows", 0],
             ["970", "Light Pumpkin", "#f57c00", "Oranges & Yellows", 0],
             ["971", "Pumpkin", "#e65100", "Oranges & Yellows", 0],
-            ["972", "Canary Yellow Deep", "#FFBC00", "Oranges & Yellows", 0],
+            ["972", "Deep Canary", "#ffb300", "Oranges & Yellows", 0],
             ["973", "Bright Canary", "#ffee58", "Oranges & Yellows", 0],
             ["975", "Dark Golden Brown", "#7a3e12", "Browns & Earthy", 0],
             ["976", "Medium Golden Brown", "#b56e2b", "Browns & Earthy", 0],
@@ -726,8 +687,8 @@
             ["991", "Dark Aquamarine", "#0e7562", "Greens", 0],
             ["992", "Light Aquamarine", "#43ab95", "Greens", 0],
             ["993", "Very Light Aquamarine", "#6fc2b0", "Greens", 0],
-            ["995", "Electric Blue Dark", "#0072bb", "Blues", 0],
-            ["996", "Electric Blue Medium", "#00A2E8", "Blues", 0],
+            ["995", "Electric Blue Dark", "#0072bb", "Blues & Violets", 0],
+            ["996", "Electric Blue Medium", "#00a8e8", "Blues & Violets", 0],
             ["3011", "Dark Khaki Green", "#505432", "Greens", 0],
             ["3012", "Medium Khaki Green", "#6d7345", "Greens", 0],
             ["3013", "Light Khaki Green", "#8d9460", "Greens", 0],
@@ -738,8 +699,8 @@
             ["3031", "Very Dark Mocha Brown", "#2e1e12", "Browns & Earthy", 0],
             ["3032", "Medium Mocha Brown", "#7a6754", "Browns & Earthy", 0],
             ["3033", "Very Light Mocha Brown", "#baa896", "Browns & Earthy", 0],
-            ["3041", "Medium Antique Violet", "#7a586e", "Purples", 0],
-            ["3042", "Light Antique Violet", "#a38297", "Purples", 0],
+            ["3041", "Medium Antique Violet", "#7a586e", "Blues & Violets", 0],
+            ["3042", "Light Antique Violet", "#a38297", "Blues & Violets", 0],
             ["3045", "Dark Yellow Beige", "#9e7d47", "Browns & Earthy", 0],
             ["3046", "Medium Yellow Beige", "#c2a36b", "Browns & Earthy", 0],
             ["3047", "Light Yellow Beige", "#dbbf8a", "Browns & Earthy", 0],
@@ -747,9 +708,9 @@
             ["3052", "Medium Green Grey", "#566347", "Greens", 0],
             ["3053", "Green Grey", "#738262", "Greens", 0],
             ["3064", "Desert Sand", "#a16b50", "Browns & Earthy", 0],
-            ["3072", "Very Light Beaver Grey", "#c9c9c1", "Neutrals & Monochromes", 0],
+            ["3072", "Very Light Beaver Grey", "#c9c9c1", "Greys & Black", 0],
             ["3078", "Very Light Golden Yellow", "#fbf3b3", "Oranges & Yellows", 0],
-            ["3325", "Light Baby Blue", "#b0ceeb", "Blues", 0],
+            ["3325", "Light Baby Blue", "#b0ceeb", "Blues & Violets", 0],
             ["3326", "Light Rose", "#f08d9b", "Reds & Pinks", 0],
             ["3328", "Dark Salmon", "#b53a47", "Reds & Pinks", 0],
             ["3340", "Medium Apricot", "#f06a4b", "Oranges & Yellows", 0],
@@ -783,19 +744,19 @@
             ["3727", "Light Antique Mauve", "#d69ab0", "Reds & Pinks", 0],
             ["3731", "Very Dark Country Rose", "#9e2f4a", "Reds & Pinks", 0],
             ["3733", "Country Rose", "#ce5a78", "Reds & Pinks", 0],
-            ["3740", "Dark Antique Violet", "#5e4252", "Purples", 0],
-            ["3743", "Very Light Antique Violet", "#bdabb8", "Purples", 0],
-            ["3746", "Dark Blue Violet", "#593f87", "Purples", 0],
-            ["3747", "Very Light Blue Violet", "#c0c0e3", "Purples", 0],
-            ["3750", "Very Dark Antique Blue", "#1b3247", "Blues", 0],
-            ["3752", "Very Light Antique Blue", "#a4b9c9", "Blues", 0],
-            ["3753", "Ultra Very Light Antique Blue", "#cbe0ed", "Blues", 0],
-            ["3755", "Baby Blue", "#618bb3", "Blues", 0],
-            ["3756", "Ultra Very Light Baby Blue", "#e8f4f8", "Blues", 0],
-            ["3760", "Medium Wedgewood", "#306e91", "Blues", 0],
-            ["3761", "Light Sky Blue", "#96c2db", "Blues", 0],
-            ["3765", "Very Dark Peacock Blue", "#0f4f61", "Blues", 0],
-            ["3766", "Light Peacock Blue", "#63b5c7", "Blues", 0],
+            ["3740", "Dark Antique Violet", "#5e4252", "Blues & Violets", 0],
+            ["3743", "Very Light Antique Violet", "#bdabb8", "Blues & Violets", 0],
+            ["3746", "Dark Blue Violet", "#593f87", "Blues & Violets", 0],
+            ["3747", "Very Light Blue Violet", "#c0c0e3", "Blues & Violets", 0],
+            ["3750", "Very Dark Antique Blue", "#1b3247", "Blues & Violets", 0],
+            ["3752", "Very Light Antique Blue", "#a4b9c9", "Blues & Violets", 0],
+            ["3753", "Ultra Very Light Antique Blue", "#cbe0ed", "Blues & Violets", 0],
+            ["3755", "Baby Blue", "#618bb3", "Blues & Violets", 0],
+            ["3756", "Ultra Very Light Baby Blue", "#e8f4f8", "Blues & Violets", 0],
+            ["3760", "Medium Wedgewood", "#306e91", "Blues & Violets", 0],
+            ["3761", "Light Sky Blue", "#96c2db", "Blues & Violets", 0],
+            ["3765", "Very Dark Peacock Blue", "#0f4f61", "Blues & Violets", 0],
+            ["3766", "Light Peacock Blue", "#63b5c7", "Blues & Violets", 0],
             ["3768", "Dark Grey Green", "#395252", "Greens", 0],
             ["3770", "Very Light Tawny", "#fce8d9", "Browns & Earthy", 0],
             ["3771", "Dark Peach", "#c9715d", "Reds & Pinks", 0],
@@ -810,18 +771,18 @@
             ["3782", "Light Mocha Brown", "#9e836d", "Browns & Earthy", 0],
             ["3787", "Dark Brown Grey", "#473f38", "Browns & Earthy", 0],
             ["3790", "Ultra Dark Beige Grey", "#5e5246", "Browns & Earthy", 0],
-            ["3799", "Very Dark Pewter Grey", "#292c30", "Neutrals & Monochromes", 0],
+            ["3799", "Very Dark Pewter Grey", "#292c30", "Greys & Black", 0],
             ["3801", "Very Dark Melon", "#d41743", "Reds & Pinks", 0],
             ["3802", "Very Dark Antique Mauve", "#541e2a", "Reds & Pinks", 0],
             ["3803", "Dark Mauve", "#701333", "Reds & Pinks", 0],
             ["3804", "Dark Cyclamen Pink", "#c41263", "Reds & Pinks", 0],
             ["3805", "Cyclamen Pink", "#e3227b", "Reds & Pinks", 0],
             ["3806", "Light Cyclamen Pink", "#f75e9f", "Reds & Pinks", 0],
-            ["3807", "Cornflower Blue", "#404d80", "Blues", 0],
-            ["3808", "Ultra Very Dark Turquoise", "#004754", "Blues", 0],
-            ["3809", "Very Dark Turquoise", "#005e6e", "Blues", 0],
-            ["3810", "Dark Turquoise", "#007a8c", "Blues", 0],
-            ["3811", "Very Light Turquoise", "#bce3eb", "Blues", 0],
+            ["3807", "Cornflower Blue", "#404d80", "Blues & Violets", 0],
+            ["3808", "Ultra Very Dark Turquoise", "#004754", "Blues & Violets", 0],
+            ["3809", "Very Dark Turquoise", "#005e6e", "Blues & Violets", 0],
+            ["3810", "Dark Turquoise", "#007a8c", "Blues & Violets", 0],
+            ["3811", "Very Light Turquoise", "#bce3eb", "Blues & Violets", 0],
             ["3812", "Very Dark Seagreen", "#00695c", "Greens", 0],
             ["3813", "Light Blue Green", "#83bd9d", "Greens", 0],
             ["3814", "Aquamarine", "#239178", "Greens", 0],
@@ -844,19 +805,19 @@
             ["3831", "Dark Raspberry", "#b31e3f", "Reds & Pinks", 0],
             ["3832", "Medium Raspberry", "#d6385d", "Reds & Pinks", 0],
             ["3833", "Light Raspberry", "#ea6081", "Reds & Pinks", 0],
-            ["3834", "Dark Grape", "#52234f", "Purples", 0],
-            ["3835", "Medium Grape", "#7a3b75", "Purples", 0],
-            ["3836", "Light Grape", "#a668a1", "Purples", 0],
-            ["3837", "Ultra Dark Lavender", "#5c1b75", "Purples", 0],
-            ["3838", "Dark Lavender Blue", "#41548c", "Purples", 0],
-            ["3839", "Medium Lavender Blue", "#6374a8", "Purples", 0],
-            ["3840", "Light Lavender Blue", "#a8b7de", "Purples", 0],
-            ["3841", "Baby Blue Pale", "#cddeed", "Blues", 0],
-            ["3842", "Dark Wedgewood", "#133f5c", "Blues", 0],
-            ["3843", "Electric Blue Light", "#0091d6", "Blues", 0],
-            ["3844", "Bright Turquoise Dark", "#008ba3", "Blues", 0],
-            ["3845", "Bright Turquoise Medium", "#00a3bd", "Blues", 0],
-            ["3846", "Bright Turquoise Light", "#00c3d9", "Blues", 0],
+            ["3834", "Dark Grape", "#52234f", "Blues & Violets", 0],
+            ["3835", "Medium Grape", "#7a3b75", "Blues & Violets", 0],
+            ["3836", "Light Grape", "#a668a1", "Blues & Violets", 0],
+            ["3837", "Ultra Dark Lavender", "#5c1b75", "Blues & Violets", 0],
+            ["3838", "Dark Lavender Blue", "#41548c", "Blues & Violets", 0],
+            ["3839", "Medium Lavender Blue", "#6374a8", "Blues & Violets", 0],
+            ["3840", "Light Lavender Blue", "#a8b7de", "Blues & Violets", 0],
+            ["3841", "Baby Blue Pale", "#cddeed", "Blues & Violets", 0],
+            ["3842", "Dark Wedgewood", "#133f5c", "Blues & Violets", 0],
+            ["3843", "Electric Blue Light", "#0091d6", "Blues & Violets", 0],
+            ["3844", "Bright Turquoise Dark", "#008ba3", "Blues & Violets", 0],
+            ["3845", "Bright Turquoise Medium", "#00a3bd", "Blues & Violets", 0],
+            ["3846", "Bright Turquoise Light", "#00c3d9", "Blues & Violets", 0],
             ["3847", "Dark Teal Green", "#0f5e52", "Greens", 0],
             ["3848", "Medium Teal Green", "#237a6d", "Greens", 0],
             ["3849", "Light Teal Green", "#43a393", "Greens", 0],
@@ -875,8 +836,8 @@
             ["3862", "Dark Mocha Beige", "#5c412b", "Browns & Earthy", 0],
             ["3863", "Medium Mocha Beige", "#785b43", "Browns & Earthy", 0],
             ["3864", "Light Mocha Beige", "#9e8169", "Browns & Earthy", 0],
-            ["3865", "Winter White", "#fbf9f4", "Neutrals & Monochromes", 0],
-            ["3866", "Ultra Very Light Mocha", "#ebdcd0", "Neutrals & Monochromes", 0],
+            ["3865", "Winter White", "#fbf9f4", "Whites & Neutrals", 0],
+            ["3866", "Ultra Very Light Mocha", "#ebdcd0", "Whites & Neutrals", 0],
             ["E130", "Gemstones Ocean Sunrise", "#00bcd4", "Specialty & Metallics", 1],
             ["E135", "Gemstones Golden Dawn", "#ffd54f", "Specialty & Metallics", 1],
             ["E155", "Amethyst Light Effects", "#9c27b0", "Specialty & Metallics", 1],
@@ -895,7 +856,7 @@
             ["E705", "Green Light Effects", "#2E8B57", "Specialty & Metallics", 1],
             ["E718", "Pink Garnet Light Effects", "#c2185b", "Specialty & Metallics", 1],
             ["E746", "Cream Pearlescent Light Effects", "#fff9c4", "Specialty & Metallics", 1],
-            ["E747", "Baby Blue Pearlescent Light Effects", "#e0f7fa", "Specialty & Metallics", 1],
+            ["E747", "Baby Blue Light Effects", "#e0f7fa", "Specialty & Metallics", 1],
             ["E815", "Garnet Light Effects", "#800000", "Specialty & Metallics", 1],
             ["E825", "Blue Light Effects", "#1E3A8A", "Specialty & Metallics", 1],
             ["E898", "Dark Oak Light Effects", "#3B2F2F", "Specialty & Metallics", 1],
@@ -953,11 +914,27 @@
             return numA.localeCompare(numB);
         }
 
+        // Forcefully checks local storage and overwrites if array length is less than 515
         function loadInventory() {
             const saved = localStorage.getItem('dmc_inventory_data');
             if (saved) {
                 try {
-                    inventory = JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length >= 515) {
+                        inventory = parsed;
+                    } else {
+                        // Automatically upgrade cache to the complete 515 set
+                        inventory = [...DEFAULT_DMC_DATA];
+                        // Preserve any custom counts if they existed
+                        parsed.forEach(oldItem => {
+                            const match = inventory.find(i => i.number === oldItem.number);
+                            if (match) {
+                                match.active = oldItem.active;
+                                match.backstock = oldItem.backstock;
+                            }
+                        });
+                        saveInventory();
+                    }
                 } catch (e) {
                     inventory = [...DEFAULT_DMC_DATA];
                 }
@@ -975,145 +952,87 @@
             renderShoppingList();
         }
 
+        function forceFullReset() {
+            if (confirm("Are you sure you want to completely reset and reload all 515 DMC default colors? This will reset all current quantity counts to 0.")) {
+                localStorage.removeItem('dmc_inventory_data');
+                inventory = [...DEFAULT_DMC_DATA];
+                saveInventory();
+                renderInventory();
+                alert("Database successfully reset to all 515 colors!");
+            }
+        }
+
         function generateShareableLink() {
             try {
                 const compact = inventory.map(item => ({
-                    n: item.number,
-                    m: item.name,
-                    c: item.category,
-                    h: item.hex,
-                    e: item.isLightEffects ? 1 : 0,
-                    a: item.active,
-                    b: item.backstock,
-                    t: item.threshold
+                    n: item.number, m: item.name, c: item.category, h: item.hex,
+                    e: item.isLightEffects ? 1 : 0, a: item.active, b: item.backstock, t: item.threshold
                 }));
-
-                const jsonStr = JSON.stringify(compact);
-                const encoded = btoa(encodeURIComponent(jsonStr));
+                const encoded = btoa(encodeURIComponent(JSON.stringify(compact)));
                 const shareUrl = `${window.location.origin}${window.location.pathname}#shared=${encoded}`;
-
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(shareUrl);
-                } else {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = shareUrl;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-
+                navigator.clipboard.writeText(shareUrl);
                 alert("Shareable Link copied to clipboard!");
-            } catch (err) {
-                alert("Unable to generate share link. Try exporting as JSON instead.");
-            }
+            } catch (err) { alert("Unable to generate link."); }
         }
 
         function checkSharedURL() {
             if (!window.location.hash || !window.location.hash.includes('#shared=')) return;
-
             try {
                 const encoded = window.location.hash.replace('#shared=', '');
-                const jsonStr = decodeURIComponent(atob(encoded));
-                const raw = JSON.parse(jsonStr);
-
+                const raw = JSON.parse(decodeURIComponent(atob(encoded)));
                 if (Array.isArray(raw)) {
                     pendingSharedData = raw.map((item, idx) => ({
-                        id: item.n || Date.now() + idx,
-                        number: item.n,
-                        name: item.m,
-                        category: item.c,
-                        hex: item.h,
-                        isLightEffects: !!item.e,
-                        active: item.a || 0,
-                        backstock: item.b || 0,
-                        threshold: item.t || 1
+                        id: item.n || Date.now() + idx, number: item.n, name: item.m,
+                        category: item.c, hex: item.h, isLightEffects: !!item.e,
+                        active: item.a || 0, backstock: item.b || 0, threshold: item.t || 1
                     }));
-
                     openModal('sharedModal');
                 }
-            } catch (e) {
-                console.error("Failed to parse shared URL payload", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function applySharedData(mode) {
             if (!pendingSharedData) return;
-
-            if (mode === 'replace') {
-                inventory = pendingSharedData;
-            } else if (mode === 'merge') {
+            if (mode === 'replace') { inventory = pendingSharedData; }
+            else if (mode === 'merge') {
                 pendingSharedData.forEach(shared => {
                     const existing = inventory.find(i => i.number.toLowerCase() === shared.number.toLowerCase());
-                    if (existing) {
-                        existing.active = shared.active;
-                        existing.backstock = shared.backstock;
-                    } else {
-                        inventory.push(shared);
-                    }
+                    if (existing) { existing.active = shared.active; existing.backstock = shared.backstock; }
+                    else { inventory.push(shared); }
                 });
             }
-
             history.replaceState(null, "", window.location.pathname);
-            saveInventory();
-            renderInventory();
-            closeModal('sharedModal');
+            saveInventory(); renderInventory(); closeModal('sharedModal');
             alert("Shared inventory successfully loaded!");
         }
 
         function handleReset(type) {
             if (type === 'zero') {
-                inventory.forEach(item => {
-                    item.active = 0;
-                    item.backstock = 0;
-                });
+                inventory.forEach(item => { item.active = 0; item.backstock = 0; });
             } else if (type === 'default') {
                 inventory = [...DEFAULT_DMC_DATA];
             }
-
-            saveInventory();
-            renderInventory();
-            closeModal('resetModal');
+            saveInventory(); renderInventory(); closeModal('resetModal');
         }
 
         function renderStats() {
-            const totalColors = inventory.length;
-            const activeSkeins = inventory.reduce((acc, curr) => acc + (parseInt(curr.active) || 0), 0);
-            const backstockSkeins = inventory.reduce((acc, curr) => acc + (parseInt(curr.backstock) || 0), 0);
-            const restockCount = inventory.filter(item => item.active <= item.threshold && item.backstock === 0).length;
-
-            document.getElementById('stat-total-colors').textContent = totalColors;
-            document.getElementById('stat-active-skeins').textContent = activeSkeins;
-            document.getElementById('stat-backstock-skeins').textContent = backstockSkeins;
-            document.getElementById('stat-need-restock').textContent = restockCount;
-            document.getElementById('shopping-count').textContent = restockCount;
+            document.getElementById('stat-total-colors').textContent = inventory.length;
+            document.getElementById('stat-active-skeins').textContent = inventory.reduce((a, c) => a + (parseInt(c.active) || 0), 0);
+            document.getElementById('stat-backstock-skeins').textContent = inventory.reduce((a, c) => a + (parseInt(c.backstock) || 0), 0);
+            const restock = inventory.filter(i => i.active <= i.threshold && i.backstock === 0).length;
+            document.getElementById('stat-need-restock').textContent = restock;
+            document.getElementById('shopping-count').textContent = restock;
         }
 
         function switchTab(tab) {
             activeTab = tab;
-            const invBtn = document.getElementById('tab-inventory');
-            const shopBtn = document.getElementById('tab-shopping');
-            const invContainer = document.getElementById('inventory-container');
-            const shopContainer = document.getElementById('shopping-container');
-            const filters = document.getElementById('inventory-filters');
-            const viewToggle = document.getElementById('view-mode-toggle');
-
-            if (tab === 'inventory') {
-                invBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm";
-                shopBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
-                invContainer.classList.remove('hidden');
-                shopContainer.classList.add('hidden');
-                filters.classList.remove('hidden');
-                viewToggle.classList.remove('hidden');
-            } else {
-                shopBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm";
-                invBtn.className = "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
-                shopContainer.classList.remove('hidden');
-                invContainer.classList.add('hidden');
-                filters.classList.add('hidden');
-                viewToggle.classList.add('hidden');
-                renderShoppingList();
-            }
+            document.getElementById('tab-inventory').className = tab === 'inventory' ? "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm" : "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
+            document.getElementById('tab-shopping').className = tab === 'shopping' ? "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all bg-white text-slate-900 shadow-sm" : "flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-md transition-all text-slate-600 hover:text-slate-900";
+            document.getElementById('inventory-container').classList.toggle('hidden', tab !== 'inventory');
+            document.getElementById('shopping-container').classList.toggle('hidden', tab !== 'shopping');
+            document.getElementById('inventory-filters').classList.toggle('hidden', tab !== 'inventory');
+            document.getElementById('view-mode-toggle').classList.toggle('hidden', tab !== 'inventory');
+            if (tab === 'shopping') renderShoppingList();
         }
 
         function setViewMode(mode) {
@@ -1134,23 +1053,14 @@
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const category = document.getElementById('categoryFilter').value;
             const status = document.getElementById('statusFilter').value;
-
             return inventory.filter(item => {
                 const matchesSearch = item.number.toLowerCase().includes(query) || item.name.toLowerCase().includes(query);
-                
-                let matchesCategory = true;
-                if (category === 'LIGHT_EFFECTS') {
-                    matchesCategory = item.isLightEffects === true;
-                } else if (category !== 'ALL') {
-                    matchesCategory = item.category === category;
-                }
-
+                let matchesCategory = category === 'ALL' ? true : (category === 'LIGHT_EFFECTS' ? item.isLightEffects : item.category === category);
                 let matchesStatus = true;
                 if (status === 'IN_STOCK') matchesStatus = item.active > 0;
                 else if (status === 'LOW_STOCK') matchesStatus = item.active <= item.threshold && item.active > 0;
                 else if (status === 'OUT_OF_STOCK') matchesStatus = item.active === 0;
                 else if (status === 'HAS_BACKSTOCK') matchesStatus = item.backstock > 0;
-
                 return matchesSearch && matchesCategory && matchesStatus;
             });
         }
@@ -1158,328 +1068,112 @@
         function renderInventory() {
             const filtered = getFilteredInventory();
             const container = document.getElementById('inventory-display');
-
             if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
-                        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-3">
-                            <i data-lucide="search-x" class="w-6 h-6"></i>
-                        </div>
-                        <p class="font-semibold text-slate-700">No DMC floss colors match your criteria</p>
-                        <p class="text-xs text-slate-400 mt-1">Try resetting filters or adding a new color.</p>
-                    </div>
-                `;
-                lucide.createIcons();
+                container.innerHTML = `<div class="bg-white rounded-xl border border-slate-200 p-12 text-center text-slate-500">No DMC floss colors match your criteria</div>`;
                 return;
             }
-
             if (viewMode === 'grid') {
                 let html = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">';
                 filtered.forEach(item => {
                     const isLow = item.active <= item.threshold && item.active > 0;
                     const isOut = item.active === 0;
-
                     html += `
-                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative flex flex-col justify-between space-y-3">
-                            <div>
-                                <div class="flex items-start gap-3">
-                                    <div class="w-10 h-10 rounded-lg shadow-inner border border-black/10 flex-shrink-0" style="background-color: ${item.hex}"></div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-bold text-slate-900 text-base">#${item.number}</span>
-                                            ${isOut ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 rounded-full">Out of Stock</span>' : 
-                                              isLow ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full">Low Stock</span>' : ''}
-                                        </div>
-                                        <p class="text-xs text-slate-600 truncate font-medium">${item.name}</p>
-                                        <p class="text-[10px] text-slate-400 truncate">${item.category}</p>
+                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between space-y-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg shadow-inner border border-black/10 flex-shrink-0" style="background-color: ${item.hex}"></div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-slate-900 text-base">#${item.number}</span>
+                                        ${isOut ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 rounded-full">Out of Stock</span>' : isLow ? '<span class="px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded-full">Low Stock</span>' : ''}
                                     </div>
+                                    <p class="text-xs text-slate-600 truncate font-medium">${item.name}</p>
                                 </div>
-                                ${item.isLightEffects ? `
-                                    <div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-md text-[10px] font-bold">
-                                        ✨ Light Effects
-                                    </div>
-                                ` : ''}
                             </div>
-
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-center">
+                                <div class="bg-slate-50 p-2 rounded-lg border">
                                     <span class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Active</span>
                                     <div class="flex items-center justify-between gap-1">
-                                        <button onclick="updateQty('${item.id}', 'active', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">-</button>
-                                        <span class="font-bold text-sm text-slate-800">${item.active}</span>
-                                        <button onclick="updateQty('${item.id}', 'active', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">+</button>
+                                        <button onclick="updateQty('${item.id}', 'active', -1)" class="w-6 h-6 bg-white border rounded font-bold">-</button>
+                                        <span class="font-bold text-sm">${item.active}</span>
+                                        <button onclick="updateQty('${item.id}', 'active', 1)" class="w-6 h-6 bg-white border rounded font-bold">+</button>
                                     </div>
                                 </div>
-
-                                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-center">
+                                <div class="bg-slate-50 p-2 rounded-lg border">
                                     <span class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Backstock</span>
                                     <div class="flex items-center justify-between gap-1">
-                                        <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">-</button>
-                                        <span class="font-bold text-sm text-slate-800">${item.backstock}</span>
-                                        <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-6 h-6 bg-white border border-slate-200 rounded text-slate-600 hover:bg-slate-100 font-bold flex items-center justify-center">+</button>
+                                        <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-6 h-6 bg-white border rounded font-bold">-</button>
+                                        <span class="font-bold text-sm">${item.backstock}</span>
+                                        <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-6 h-6 bg-white border rounded font-bold">+</button>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="flex justify-between items-center text-xs text-slate-400 pt-1">
-                                <span>Min: ${item.threshold}</span>
-                                <button onclick="deleteColor('${item.id}')" class="text-slate-300 hover:text-rose-500 transition-colors" title="Delete Color">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
-                html += '</div>';
-                container.innerHTML = html;
+                container.innerHTML = html + '</div>';
             } else {
-                let html = `
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium text-xs uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-3">Color</th>
-                                    <th class="p-3">Number</th>
-                                    <th class="p-3">Name</th>
-                                    <th class="p-3">Type</th>
-                                    <th class="p-3 text-center">Active</th>
-                                    <th class="p-3 text-center">Backstock</th>
-                                    <th class="p-3 text-center">Threshold</th>
-                                    <th class="p-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100">
-                `;
-
+                let html = `<div class="bg-white border rounded-xl overflow-x-auto"><table class="w-full text-left text-sm"><tbody class="divide-y">`;
                 filtered.forEach(item => {
-                    html += `
-                        <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="p-3">
-                                <div class="w-7 h-7 rounded shadow-inner border border-black/10" style="background-color: ${item.hex}"></div>
-                            </td>
-                            <td class="p-3 font-bold text-slate-900">#${item.number}</td>
-                            <td class="p-3 font-medium text-slate-700">${item.name}</td>
-                            <td class="p-3 text-xs">
-                                ${item.isLightEffects ? 
-                                    '<span class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[10px] font-bold">✨ Light Effects</span>' : 
-                                    `<span class="text-slate-500">${item.category}</span>`}
-                            </td>
-                            <td class="p-3">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick="updateQty('${item.id}', 'active', -1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">-</button>
-                                    <span class="font-semibold text-slate-800 w-4 text-center">${item.active}</span>
-                                    <button onclick="updateQty('${item.id}', 'active', 1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">+</button>
-                                </div>
-                            </td>
-                            <td class="p-3">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button onclick="updateQty('${item.id}', 'backstock', -1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">-</button>
-                                    <span class="font-semibold text-slate-800 w-4 text-center">${item.backstock}</span>
-                                    <button onclick="updateQty('${item.id}', 'backstock', 1)" class="w-5 h-5 bg-slate-100 rounded hover:bg-slate-200 text-slate-700 font-bold">+</button>
-                                </div>
-                            </td>
-                            <td class="p-3 text-center text-xs text-slate-500">${item.threshold}</td>
-                            <td class="p-3 text-right">
-                                <button onclick="deleteColor('${item.id}')" class="text-slate-400 hover:text-rose-600 transition-colors p-1">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+                    html += `<tr class="hover:bg-slate-50"><td class="p-3"><div class="w-6 h-6 rounded border" style="background-color: ${item.hex}"></div></td><td class="p-3 font-bold">#${item.number}</td><td class="p-3">${item.name}</td><td class="p-3 text-center">Active: ${item.active}</td></tr>`;
                 });
-
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-                container.innerHTML = html;
+                container.innerHTML = html + `</tbody></table></div>`;
             }
-
             lucide.createIcons();
         }
 
         function updateQty(id, field, delta) {
             const item = inventory.find(i => i.id === id);
             if (!item) return;
-
-            if (field === 'active') {
-                item.active = Math.max(0, item.active + delta);
-            } else if (field === 'backstock') {
-                item.backstock = Math.max(0, item.backstock + delta);
-            }
-
-            saveInventory();
-            renderInventory();
+            item[field] = Math.max(0, (item[field] || 0) + delta);
+            saveInventory(); renderInventory();
         }
 
-        function deleteColor(id) {
-            if (confirm("Are you sure you want to remove this DMC color from your tracker?")) {
-                inventory = inventory.filter(i => i.id !== id);
-                saveInventory();
-                renderInventory();
-            }
-        }
-
-        function handleAddFloss(event) {
-            event.preventDefault();
+        function handleAddFloss(e) {
+            e.preventDefault();
             const number = document.getElementById('addNumber').value.trim();
             const name = document.getElementById('addName').value.trim();
-            const category = document.getElementById('addCategory').value;
-            const hex = document.getElementById('addHex').value.trim();
-            const isLightEffects = document.getElementById('addIsLightEffects').checked;
-            const active = parseInt(document.getElementById('addActive').value) || 0;
-            const backstock = parseInt(document.getElementById('addBackstock').value) || 0;
-            const threshold = parseInt(document.getElementById('addThreshold').value) || 1;
-
             if (!number || !name) return;
-
-            const existing = inventory.find(i => i.number.toLowerCase() === number.toLowerCase());
-            if (existing) {
-                alert(`DMC #${number} already exists in your inventory!`);
-                return;
-            }
-
-            const newItem = {
-                id: Date.now().toString(),
-                number,
-                name,
-                category,
-                hex,
-                isLightEffects,
-                active,
-                backstock,
-                threshold
-            };
-
-            inventory.push(newItem);
-            saveInventory();
-            renderInventory();
-            closeModal('addModal');
+            inventory.push({
+                id: Date.now().toString(), number, name,
+                category: document.getElementById('addCategory').value,
+                hex: document.getElementById('addHex').value,
+                isLightEffects: document.getElementById('addIsLightEffects').checked,
+                active: parseInt(document.getElementById('addActive').value) || 0,
+                backstock: parseInt(document.getElementById('addBackstock').value) || 0,
+                threshold: 1
+            });
+            saveInventory(); renderInventory(); closeModal('addModal');
             document.getElementById('addFlossForm').reset();
         }
 
         function renderShoppingList() {
             const container = document.getElementById('shopping-list-display');
-            const needed = inventory.filter(item => item.active <= item.threshold && item.backstock === 0);
-
-            if (needed.length === 0) {
-                container.innerHTML = `
-                    <div class="p-12 text-center">
-                        <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-3">
-                            <i data-lucide="check-circle-2" class="w-6 h-6"></i>
-                        </div>
-                        <p class="font-semibold text-slate-800">Your thread stock is fully supplied!</p>
-                        <p class="text-xs text-slate-400 mt-1">No items are currently below low-stock threshold with empty backstock.</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            let html = '<div class="divide-y divide-slate-100">';
-            needed.forEach(item => {
-                const isChecked = checkedShoppingItems.has(item.id);
-                html += `
-                    <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors ${isChecked ? 'bg-slate-50/80 opacity-60' : ''}">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingCheck('${item.id}')" class="w-4 h-4 rounded text-rose-600 focus:ring-rose-500 border-slate-300">
-                            <div class="w-6 h-6 rounded border border-black/10 shadow-inner" style="background-color: ${item.hex}"></div>
-                            <div>
-                                <div class="flex items-center gap-1.5">
-                                    <p class="font-bold text-sm text-slate-900 ${isChecked ? 'line-through' : ''}">#${item.number} - ${item.name}</p>
-                                    ${item.isLightEffects ? '<span class="px-1.5 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-[9px] font-bold">✨ Light Effects</span>' : ''}
-                                </div>
-                                <p class="text-xs text-slate-400">${item.category}</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-4">
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-rose-50 text-rose-600">
-                                ${item.active === 0 ? 'Out of Stock' : `Low (${item.active} left)`}
-                            </span>
-                            <button onclick="restockItem('${item.id}')" title="Mark Restocked (+1 Active)" class="text-xs font-semibold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1">
-                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Restock
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += '</div>';
-            container.innerHTML = html;
+            const needed = inventory.filter(i => i.active <= i.threshold && i.backstock === 0);
+            container.innerHTML = needed.length === 0 ? `<div class="p-12 text-center text-slate-500">Your thread stock is fully supplied!</div>` : `<div class="divide-y">` + needed.map(i => `<div class="p-4 flex justify-between"><span>#${i.number} - ${i.name}</span><button onclick="restockItem('${i.id}')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-semibold">Restock</button></div>`).join('') + `</div>`;
             lucide.createIcons();
-        }
-
-        function toggleShoppingCheck(id) {
-            if (checkedShoppingItems.has(id)) {
-                checkedShoppingItems.delete(id);
-            } else {
-                checkedShoppingItems.add(id);
-            }
-            renderShoppingList();
         }
 
         function restockItem(id) {
             const item = inventory.find(i => i.id === id);
-            if (item) {
-                item.active += 1;
-                saveInventory();
-                renderShoppingList();
-            }
-        }
-
-        function copyShoppingList() {
-            const needed = inventory.filter(item => item.active <= item.threshold && item.backstock === 0);
-            if (needed.length === 0) return;
-
-            const text = "DMC Floss Restock List:\n" + needed.map(i => `- DMC #${i.number} (${i.name})${i.isLightEffects ? ' [✨ Light Effects]' : ''}`).join('\n');
-            
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text);
-            } else {
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-            }
-            
-            alert("Shopping list copied to clipboard!");
+            if (item) { item.active += 1; saveInventory(); renderShoppingList(); }
         }
 
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `DMC_Floss_Inventory_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
+            const blob = new Blob([JSON.stringify(inventory, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `DMC_Floss_Inventory.json`; a.click(); a.remove();
         }
 
-        function importData(event) {
-            const file = event.target.files[0];
+        function importData(e) {
+            const file = e.target.files[0];
             if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
+            const r = new FileReader();
+            r.onload = function(evt) {
                 try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        inventory = imported;
-                        saveInventory();
-                        renderInventory();
-                        alert("Inventory successfully imported!");
-                    } else {
-                        alert("Invalid file format. Expected a JSON array of colors.");
-                    }
-                } catch (err) {
-                    alert("Error parsing JSON file.");
-                }
+                    const parsed = JSON.parse(evt.target.result);
+                    if (Array.isArray(parsed)) { inventory = parsed; saveInventory(); renderInventory(); alert("Imported!"); }
+                } catch(err) { alert("Invalid JSON"); }
             };
-            reader.readAsText(file);
+            r.readAsText(file);
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
